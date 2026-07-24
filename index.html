@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -618,7 +618,7 @@
   closeBtn.addEventListener('click', closePlayer);
   modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closePlayer(); });
 
-  // Sistema de navegación espacial con las flechitas del teclado / D-Pad
+  // Navegación con flechitas + Reproducción del sonido
   document.addEventListener('keydown', (e) => {
     const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
@@ -629,7 +629,6 @@
 
     if (!arrowKeys.includes(e.key)) return;
 
-    // Si estás escribiendo en la barra de búsqueda, se permite mover el cursor del texto
     if (document.activeElement === document.getElementById('searchInput') && e.key !== 'ArrowDown') {
       return;
     }
@@ -646,6 +645,7 @@
     const current = document.activeElement;
     if (!focusables.includes(current)) {
       focusables[0].focus();
+      playClickSound();
       return;
     }
 
@@ -676,6 +676,7 @@
 
     if (bestMatch) {
       bestMatch.focus();
+      playClickSound();
     }
   });
 </script>
