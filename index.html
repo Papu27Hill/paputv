@@ -362,7 +362,20 @@
     box-shadow: 0 0 30px rgba(157, 78, 221, 0.2);
   }
 
-  .modal video{ width: 100%; display: block; background: #000; }
+  .player-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+
+  .player-wrapper video,
+  .player-wrapper iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: #000;
+  }
 
   .modal-head{
     display: flex;
@@ -429,7 +442,7 @@
 
 <div class="modal-bg" id="modalBg">
   <div class="modal">
-    <video id="player" controls tabindex="0"></video>
+    <div class="player-wrapper" id="playerContainer"></div>
     <div class="modal-head">
       <h3 id="modalTitle"></h3>
       <button class="close-btn" id="closeBtn" tabindex="0">Cerrar</button>
@@ -596,22 +609,34 @@
   }
 
   const modalBg = document.getElementById('modalBg');
-  const player = document.getElementById('player');
+  const playerContainer = document.getElementById('playerContainer');
   const modalTitle = document.getElementById('modalTitle');
   const closeBtn = document.getElementById('closeBtn');
 
+  function isEmbedUrl(url) {
+    if (!url) return false;
+    const urlLower = url.toLowerCase();
+    const directExtensions = ['.mp4', '.m3u8', '.mp3', '.webm', '.ogg', '.wav'];
+    return urlLower.includes('/embed/') || urlLower.includes('vidsrc') || urlLower.includes('iframe') || !directExtensions.some(ext => urlLower.includes(ext));
+  }
+
   function openPlayer(item){
     modalTitle.textContent = item.title;
-    player.src = item.src || '';
+    const url = item.src || '';
+
+    if (isEmbedUrl(url)) {
+      playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+    } else {
+      playerContainer.innerHTML = `<video id="player" src="${url}" controls tabindex="0" autoplay></video>`;
+    }
+
     modalBg.classList.add('open');
-    if(item.src) player.play().catch(()=>{});
     closeBtn.focus();
   }
 
   function closePlayer(){
     playClickSound();
-    player.pause();
-    player.src = '';
+    playerContainer.innerHTML = '';
     modalBg.classList.remove('open');
   }
 
@@ -637,7 +662,7 @@
 
     const isModalOpen = modalBg.classList.contains('open');
     const container = isModalOpen ? modalBg : document;
-    const focusables = Array.from(container.querySelectorAll('button:not([disabled]), input, a[href], video, [tabindex="0"]'))
+    const focusables = Array.from(container.querySelectorAll('button:not([disabled]), input, a[href], video, iframe, [tabindex="0"]'))
       .filter(el => el.offsetParent !== null && window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).visibility !== 'hidden');
 
     if (!focusables.length) return;
