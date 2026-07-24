@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -117,7 +117,7 @@
     flex-shrink: 0;
   }
 
-  .cat-btn:hover{ color: var(--text); background: var(--panel-2); }
+  .cat-btn:hover, .cat-btn:focus{ color: var(--text); background: var(--panel-2); }
 
   .cat-btn.active{
     color: var(--text);
@@ -130,12 +130,12 @@
   .cat-btn.nsfw-btn.active{ border-left-color: var(--danger); }
   .cat-btn.nsfw-btn .dot{ background: var(--danger); }
 
-  .cat-btn:focus-visible,
-  .card:focus-visible,
-  .close-btn:focus-visible,
-  .btn-flotante-papu:focus-visible,
-  .btn-flotante-sugerencias:focus-visible,
-  .search-box:focus-visible {
+  .cat-btn:focus,
+  .card:focus,
+  .close-btn:focus,
+  .btn-flotante-papu:focus,
+  .btn-flotante-sugerencias:focus,
+  .search-box:focus {
     outline: 3px solid var(--purple-light) !important;
     outline-offset: -2px;
     background: var(--panel-2);
@@ -217,7 +217,7 @@
     transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
   }
 
-  .card:hover, .card:focus-visible{
+  .card:hover, .card:focus{
     transform: translateY(-4px);
     border-color: var(--purple);
   }
@@ -251,7 +251,7 @@
   }
 
   .card:hover .thumb.censored img.cover-img,
-  .card:focus-visible .thumb.censored img.cover-img{
+  .card:focus .thumb.censored img.cover-img{
     filter: blur(0px) brightness(1);
     transform: scale(1);
   }
@@ -268,7 +268,7 @@
     box-shadow: 0 0 10px var(--purple-glow);
     z-index: 2;
   }
-  .card:hover .play, .card:focus-visible .play{ opacity: 1; }
+  .card:hover .play, .card:focus .play{ opacity: 1; }
   .play::before{
     content:'';
     border-left: 10px solid var(--purple-light);
@@ -305,7 +305,7 @@
     border-radius: 50%;
   }
 
-  .btn-flotante-papu:hover, .btn-flotante-papu:focus-visible {
+  .btn-flotante-papu:hover, .btn-flotante-papu:focus {
     transform: scale(1.1);
     box-shadow: 0 0 30px #ff0000, inset 0 0 15px #ff0000;
     outline: none;
@@ -335,7 +335,7 @@
     border-radius: 50%;
   }
 
-  .btn-flotante-sugerencias:hover, .btn-flotante-sugerencias:focus-visible {
+  .btn-flotante-sugerencias:hover, .btn-flotante-sugerencias:focus {
     transform: scale(1.1);
     box-shadow: 0 0 30px var(--purple-light), inset 0 0 15px var(--purple-light);
     outline: none;
@@ -382,7 +382,7 @@
     border-radius: 6px;
     transition: border-color .2s ease, color .2s ease;
   }
-  .close-btn:hover, .close-btn:focus-visible{ color: var(--text); border-color: var(--purple-light); outline: none; }
+  .close-btn:hover, .close-btn:focus{ color: var(--text); border-color: var(--purple-light); outline: none; }
 
   @media (max-width: 720px){
     body{ grid-template-columns: 1fr; }
@@ -414,7 +414,7 @@
       <h1 id="pageTitle">Inicio</h1>
       <span class="count" id="pageCount"></span>
     </div>
-    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()">
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()" tabindex="0">
   </header>
   <div id="rows"></div>
 </main>
@@ -429,7 +429,7 @@
 
 <div class="modal-bg" id="modalBg">
   <div class="modal">
-    <video id="player" controls></video>
+    <video id="player" controls tabindex="0"></video>
     <div class="modal-head">
       <h3 id="modalTitle"></h3>
       <button class="close-btn" id="closeBtn" tabindex="0">Cerrar</button>
@@ -617,6 +617,67 @@
 
   closeBtn.addEventListener('click', closePlayer);
   modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closePlayer(); });
+
+  // Sistema de navegación espacial con las flechitas del teclado / D-Pad
+  document.addEventListener('keydown', (e) => {
+    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+
+    if (e.key === 'Escape' && modalBg.classList.contains('open')) {
+      closePlayer();
+      return;
+    }
+
+    if (!arrowKeys.includes(e.key)) return;
+
+    // Si estás escribiendo en la barra de búsqueda, se permite mover el cursor del texto
+    if (document.activeElement === document.getElementById('searchInput') && e.key !== 'ArrowDown') {
+      return;
+    }
+
+    e.preventDefault();
+
+    const isModalOpen = modalBg.classList.contains('open');
+    const container = isModalOpen ? modalBg : document;
+    const focusables = Array.from(container.querySelectorAll('button:not([disabled]), input, a[href], video, [tabindex="0"]'))
+      .filter(el => el.offsetParent !== null && window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).visibility !== 'hidden');
+
+    if (!focusables.length) return;
+
+    const current = document.activeElement;
+    if (!focusables.includes(current)) {
+      focusables[0].focus();
+      return;
+    }
+
+    const cRect = current.getBoundingClientRect();
+    let bestMatch = null;
+    let minDist = Infinity;
+
+    focusables.forEach(el => {
+      if (el === current) return;
+      const r = el.getBoundingClientRect();
+      let isCandidate = false;
+
+      if (e.key === 'ArrowRight' && r.left >= cRect.right - 10) isCandidate = true;
+      if (e.key === 'ArrowLeft' && r.right <= cRect.left + 10) isCandidate = true;
+      if (e.key === 'ArrowDown' && r.top >= cRect.bottom - 10) isCandidate = true;
+      if (e.key === 'ArrowUp' && r.bottom <= cRect.top + 10) isCandidate = true;
+
+      if (isCandidate) {
+        const dx = (r.left + r.width / 2) - (cRect.left + cRect.width / 2);
+        const dy = (r.top + r.height / 2) - (cRect.top + cRect.height / 2);
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minDist) {
+          minDist = dist;
+          bestMatch = el;
+        }
+      }
+    });
+
+    if (bestMatch) {
+      bestMatch.focus();
+    }
+  });
 </script>
 
 </body>
