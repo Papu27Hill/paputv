@@ -7,6 +7,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="icon.png">
+
+<!-- Scripts de Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+  // Configuración con tus credenciales de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCEKgeSj2UUCq7My6cEKFD8dzDdDG0z_Z8",
+    authDomain: "papu-5f7fb.firebaseapp.com",
+    databaseURL: "https://papu-5f7fb-default-rtdb.firebaseio.com",
+    projectId: "papu-5f7fb",
+    storageBucket: "papu-5f7fb.firebasestorage.app",
+    messagingSenderId: "385010164384",
+    appId: "1:385010164384:web:dd66177923b14e7f9d9fc5",
+    measurementId: "G-ME4MKT6QJG"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+
 <style>
   :root{
     --bg: #09070f;
@@ -112,7 +134,8 @@
   .card:focus-visible,
   .close-btn:focus-visible,
   .btn-flotante-papu:focus-visible,
-  .btn-flotante-sugerencias:focus-visible {
+  .btn-flotante-sugerencias:focus-visible,
+  .search-box:focus-visible {
     outline: 3px solid var(--purple-light) !important;
     outline-offset: -2px;
     background: var(--panel-2);
@@ -123,9 +146,11 @@
 
   header.top{
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     margin-bottom: 40px;
+    gap: 15px;
+    flex-wrap: wrap;
   }
 
   header.top h1{
@@ -140,6 +165,19 @@
   header.top .count{
     color: var(--muted);
     font-size: 13px;
+  }
+
+  .search-box {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 20px;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    width: 250px;
+    transition: border-color .2s ease, box-shadow .2s ease;
   }
 
   section.row{ margin-bottom: 48px; }
@@ -275,7 +313,7 @@
 
   .btn-flotante-sugerencias {
     position: fixed;
-    bottom: 95px; /* Se posiciona arriba del botón de panel */
+    bottom: 95px;
     right: 25px;
     width: 60px;
     height: 60px;
@@ -346,7 +384,6 @@
   }
   .close-btn:hover, .close-btn:focus-visible{ color: var(--text); border-color: var(--purple-light); outline: none; }
 
-  /* Ajustes mejorados para que se vea excelente en móviles */
   @media (max-width: 720px){
     body{ grid-template-columns: 1fr; }
     aside{ position: relative; height: auto; flex-direction: row; overflow-x: auto; padding: 16px 0; border-right: none; border-bottom: 1px solid var(--line); }
@@ -357,6 +394,7 @@
     .cat-btn.nsfw-btn.active{ border-bottom-color: var(--danger); }
     main{ padding: 24px 16px 100px; }
     .grid{ grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .search-box { width: 100%; }
   }
 </style>
 </head>
@@ -372,14 +410,16 @@
 
 <main>
   <header class="top">
-    <h1 id="pageTitle">Inicio</h1>
-    <span class="count" id="pageCount"></span>
+    <div>
+      <h1 id="pageTitle">Inicio</h1>
+      <span class="count" id="pageCount"></span>
+    </div>
+    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()">
   </header>
   <div id="rows"></div>
 </main>
 
-<!-- AQUI PUEDES AGREGAR TU CORREO DESPUES DE mailto: (ejemplo: mailto:tucorreo@gmail.com) -->
-<a href="mailto:" class="btn-flotante-sugerencias" title="Pedir contenido" tabindex="0" onclick="alert('Envía solicitudes de películas y será leído al instante para aportar el contenido que quieres o ideas para la página.');">
+<a href="mailto:" class="btn-flotante-sugerencias" title="Pedir contenido" tabindex="0" onclick="alert('Envía solicitudes de películas para aportar el contenido que quieres.');">
     <img src="https://i.pinimg.com/originals/4d/69/ac/4d69acc3793c1fd49b1cec20eddd9408.gif" alt="Sugerencias">
 </a>
 
@@ -402,75 +442,47 @@
 
   function playClickSound() {
     try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-
       osc.type = 'sine';
       osc.frequency.setValueAtTime(600, audioCtx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.04);
-
       gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
-
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-
       osc.start();
       osc.stop(audioCtx.currentTime + 0.04);
     } catch (e) {}
   }
 
-  const CLAVE_CATALOGO = "papuTvCatalogo";
-
   const CATEGORIAS_BASE = {
-    peliculas: {
-      label: "Películas",
-      items: [
-        { title: "Ejemplo 01", tag: "Acción · 2024", src: "", poster: "https://i.pinimg.com/736x/96/5f/c1/965fc198184680345b68fda7c2766ea2.jpg" },
-        { title: "Ejemplo 02", tag: "Drama · 2023", src: "" },
-        { title: "Ejemplo 03", tag: "Comedia · 2022", src: "" }
-      ]
-    },
-    series: {
-      label: "Series",
-      items: [
-        { title: "Serie A · T1E1", tag: "Serie", src: "" },
-        { title: "Serie B · T1E1", tag: "Serie", src: "" }
-      ]
-    },
-    adultos: {
-      label: "+18 (Exclusivo)",
-      items: [
-        {
-          title: "Contenido Picante 4K",
-          tag: "Solo Mayores · Sin Censura",
-          src: "https://dn720307.ca.archive.org/0/items/kikTXNL6MvX6ZpRXM/kikTXNL6MvX6ZpRXM.mp4",
-          poster: "https://i.pinimg.com/1200x/80/6c/b3/806cb309d855d10170db11fedf544f5d.jpg",
-          censored: true
-        }
-      ]
-    }
+    peliculas: { label: "Películas", items: [] },
+    series: { label: "Series", items: [] },
+    adultos: { label: "+18 (Exclusivo)", items: [] }
   };
 
-  function cargarCatalogoDesdePanel() {
-    let guardados = [];
-    try {
-      guardados = JSON.parse(localStorage.getItem(CLAVE_CATALOGO)) || [];
-    } catch (e) {
-      guardados = [];
-    }
+  let DATA = JSON.parse(JSON.stringify(CATEGORIAS_BASE));
+  let filtroBusqueda = "";
+  let activeCat = 'all';
 
-    const data = JSON.parse(JSON.stringify(CATEGORIAS_BASE));
+  const catNav = document.getElementById('catNav');
+  const rows = document.getElementById('rows');
+  const pageTitle = document.getElementById('pageTitle');
+  const pageCount = document.getElementById('pageCount');
+
+  // Lectura en tiempo real desde Firebase DB
+  db.ref('catalogo').on('value', (snapshot) => {
+    const rawData = snapshot.val() || {};
+    const guardados = Object.values(rawData);
+    const dataFinal = JSON.parse(JSON.stringify(CATEGORIAS_BASE));
 
     guardados.forEach(it => {
-      const cat = data[it.categoria] ? it.categoria : "peliculas";
-      data[cat].items.push({
+      if (!it) return;
+      const cat = dataFinal[it.categoria] ? it.categoria : "peliculas";
+      dataFinal[cat].items.push({
         title: it.titulo,
         tag: it.descripcion || "",
         src: it.video,
@@ -479,32 +491,18 @@
       });
     });
 
-    Object.keys(data).forEach(k => {
-      if (data[k].items.length === 0) delete data[k];
-    });
-
-    return data;
-  }
-
-  let DATA = cargarCatalogoDesdePanel();
-
-  const catNav = document.getElementById('catNav');
-  const rows = document.getElementById('rows');
-  const pageTitle = document.getElementById('pageTitle');
-  const pageCount = document.getElementById('pageCount');
-
-  const keys = Object.keys(DATA);
-  let activeCat = 'all';
+    DATA = dataFinal;
+    render();
+  });
 
   function totalItems(){
-    return keys.reduce((n,k) => n + DATA[k].items.length, 0);
+    return Object.keys(DATA).reduce((n,k) => n + DATA[k].items.length, 0);
   }
 
   function renderNav(){
     catNav.innerHTML = '';
-    const allBtn = makeCatBtn('all', 'Inicio');
-    catNav.appendChild(allBtn);
-    keys.forEach(k => catNav.appendChild(makeCatBtn(k, DATA[k].label)));
+    catNav.appendChild(makeCatBtn('all', 'Inicio'));
+    Object.keys(DATA).forEach(k => catNav.appendChild(makeCatBtn(k, DATA[k].label)));
   }
 
   function makeCatBtn(key, label){
@@ -520,21 +518,26 @@
     return btn;
   }
 
+  function filtrarBusqueda() {
+    filtroBusqueda = document.getElementById('searchInput').value.toLowerCase().trim();
+    renderRows();
+  }
+
   function renderRows(){
     rows.innerHTML = '';
-
-    if (keys.length === 0) {
-      rows.innerHTML = `
-        <div style="color: var(--muted); padding: 40px 0; text-align: center;">
-          Todavía no agregaste contenido.<br>
-          Entrá al <a href="panel.html" style="color: var(--purple-light);">panel</a> para sumar tu primer título.
-        </div>`;
-      return;
-    }
-
+    const keys = Object.keys(DATA);
     const catsToShow = activeCat === 'all' ? keys : [activeCat];
+    let encontradosTotal = 0;
 
     catsToShow.forEach(k => {
+      const itemsFiltrados = DATA[k].items.filter(item => 
+        item.title.toLowerCase().includes(filtroBusqueda) || 
+        item.tag.toLowerCase().includes(filtroBusqueda)
+      );
+
+      encontradosTotal += itemsFiltrados.length;
+      if (itemsFiltrados.length === 0) return;
+
       const section = document.createElement('section');
       section.className = 'row';
 
@@ -546,7 +549,7 @@
       const grid = document.createElement('div');
       grid.className = 'grid';
 
-      DATA[k].items.forEach(item => {
+      itemsFiltrados.forEach(item => {
         const card = document.createElement('button');
         card.className = 'card';
         card.setAttribute('tabindex', '0');
@@ -575,6 +578,13 @@
       section.appendChild(grid);
       rows.appendChild(section);
     });
+
+    if (encontradosTotal === 0) {
+      rows.innerHTML = `
+        <div style="color: var(--muted); padding: 40px 0; text-align: center;">
+          No se encontraron títulos.
+        </div>`;
+    }
   }
 
   function render(){
@@ -603,107 +613,10 @@
     player.pause();
     player.src = '';
     modalBg.classList.remove('open');
-    const firstCard = document.querySelector('.card');
-    if(firstCard) firstCard.focus();
   }
 
   closeBtn.addEventListener('click', closePlayer);
   modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closePlayer(); });
-
-  document.addEventListener('keydown', (e) => {
-    if (modalBg.classList.contains('open')) {
-      if (e.key === 'Escape' || e.key === 'Backspace' || e.keyCode === 10009 || e.keyCode === 27) {
-        closePlayer();
-        e.preventDefault();
-      }
-      return;
-    }
-
-    const focusables = Array.from(document.querySelectorAll('.cat-btn, .card, .btn-flotante-papu, .btn-flotante-sugerencias'));
-    const current = document.activeElement;
-    let index = focusables.indexOf(current);
-
-    if (index === -1) {
-      if (focusables.length > 0) focusables[0].focus();
-      return;
-    }
-
-    let nextElement = null;
-
-    if (e.key === 'ArrowDown' || e.keyCode === 40) {
-      e.preventDefault();
-      if (current.classList.contains('cat-btn')) {
-        if (index < document.querySelectorAll('.cat-btn').length - 1) {
-          nextElement = focusables[index + 1];
-        } else {
-          nextElement = document.querySelector('.card');
-        }
-      } else {
-        nextElement = getClosestElement(current, focusables, 'down');
-      }
-    } else if (e.key === 'ArrowUp' || e.keyCode === 38) {
-      e.preventDefault();
-      if (current.classList.contains('cat-btn')) {
-        if (index > 0) nextElement = focusables[index - 1];
-      } else {
-        nextElement = getClosestElement(current, focusables, 'up') || document.querySelector('.cat-btn.active') || document.querySelector('.cat-btn');
-      }
-    } else if (e.key === 'ArrowRight' || e.keyCode === 39) {
-      e.preventDefault();
-      if (current.classList.contains('cat-btn')) {
-        nextElement = document.querySelector('.card');
-      } else {
-        nextElement = getClosestElement(current, focusables, 'right');
-      }
-    } else if (e.key === 'ArrowLeft' || e.keyCode === 37) {
-      e.preventDefault();
-      if (current.classList.contains('card')) {
-        nextElement = getClosestElement(current, focusables, 'left') || document.querySelector('.cat-btn.active') || document.querySelector('.cat-btn');
-      }
-    }
-
-    if (nextElement) {
-      playClickSound();
-      nextElement.focus();
-    }
-  });
-
-  function getClosestElement(current, elements, direction) {
-    const curRect = current.getBoundingClientRect();
-    let closest = null;
-    let minDistance = Infinity;
-
-    elements.forEach(el => {
-      if (el === current) return;
-      const rect = el.getBoundingClientRect();
-
-      let isCandidate = false;
-      if (direction === 'right') isCandidate = rect.left >= curRect.right - 5;
-      if (direction === 'left') isCandidate = rect.right <= curRect.left + 5;
-      if (direction === 'down') isCandidate = rect.top >= curRect.bottom - 5;
-      if (direction === 'up') isCandidate = rect.bottom <= curRect.top + 5;
-
-      if (isCandidate) {
-        const distX = (rect.left + rect.width / 2) - (curRect.left + curRect.width / 2);
-        const distY = (rect.top + rect.height / 2) - (curRect.top + curRect.height / 2);
-        const distance = Math.sqrt(distX * distX + distY * distY);
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          closest = el;
-        }
-      }
-    });
-
-    return closest;
-  }
-
-  render();
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const firstBtn = document.querySelector('.cat-btn');
-    if (firstBtn) firstBtn.focus();
-  });
 </script>
 
 </body>

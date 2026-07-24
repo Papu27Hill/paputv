@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Oculto - El Papu TV</title>
+
+    <!-- Scripts de Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+    <script>
+      // Configuración con tus credenciales de Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyCEKgeSj2UUCq7My6cEKFD8dzDdDG0z_Z8",
+        authDomain: "papu-5f7fb.firebaseapp.com",
+        databaseURL: "https://papu-5f7fb-default-rtdb.firebaseio.com",
+        projectId: "papu-5f7fb",
+        storageBucket: "papu-5f7fb.firebasestorage.app",
+        messagingSenderId: "385010164384",
+        appId: "1:385010164384:web:dd66177923b14e7f9d9fc5",
+        measurementId: "G-ME4MKT6QJG"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+    </script>
+
     <style>
         body {
             background-color: #050505;
@@ -12,57 +34,56 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px 0;
             background-image: radial-gradient(circle, #2a0000 0%, #050505 85%);
         }
         .container {
             background: rgba(10, 0, 0, 0.95);
             border: 2px solid #8b0000;
             box-shadow: 0 0 30px rgba(255, 0, 0, 0.4), inset 0 0 20px rgba(139, 0, 0, 0.7);
-            padding: 30px;
+            padding: 25px;
             border-radius: 8px;
-            width: 320px;
+            width: 360px;
             text-align: center;
         }
         .img-banner {
             width: 100%;
-            height: 120px;
+            height: 100px;
             object-fit: cover;
             border-radius: 4px;
             border: 1px solid #ff0000;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             box-shadow: 0 0 10px #ff0000;
         }
         input, textarea, select {
-            width: 90%;
-            padding: 10px;
-            margin: 8px 0;
+            width: 95%;
+            padding: 8px;
+            margin: 6px 0;
             background: #120000;
             border: 1px solid #ff1a1a;
             color: #fff;
             border-radius: 4px;
             outline: none;
             font-family: monospace;
+            box-sizing: border-box;
         }
         input:focus, textarea:focus, select:focus {
             border-color: #ff0000;
             box-shadow: 0 0 8px #ff0000;
         }
-        textarea {
-            height: 60px;
-            resize: none;
-        }
+        textarea { height: 50px; resize: none; }
         button {
             background: linear-gradient(180deg, #ff1a1a 0%, #660000 100%);
             color: white;
             border: 1px solid #ff0000;
-            padding: 10px 20px;
+            padding: 10px;
             width: 95%;
             cursor: pointer;
             font-weight: bold;
             border-radius: 4px;
-            margin-top: 10px;
+            margin-top: 8px;
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
             transition: 0.2s;
         }
@@ -71,15 +92,9 @@
             box-shadow: 0 0 15px #ff0000;
         }
         .hidden { display: none; }
-        .success {
-            font-size: 55px;
-            color: #00ff66;
-            text-shadow: 0 0 15px #00ff66;
-            margin-bottom: 5px;
-        }
-        .lista-wrap{
-            width: 90%;
-            max-height: 140px;
+        .lista-wrap {
+            width: 95%;
+            max-height: 180px;
             overflow-y: auto;
             text-align: left;
             font-size: 11px;
@@ -87,25 +102,32 @@
             border: 1px solid #440000;
             border-radius: 4px;
             padding: 8px;
-            margin: 10px auto;
+            margin: 12px auto;
+            box-sizing: border-box;
         }
-        .lista-item{
+        .lista-item {
             border-bottom: 1px solid #330000;
-            padding: 4px 0;
+            padding: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .btn-secundario{
-            background: #1a0000;
-            border: 1px solid #660000;
-            box-shadow: none;
-            font-size: 12px;
+        .acciones-item button {
+            width: auto;
+            padding: 2px 6px;
+            font-size: 10px;
+            margin: 0 2px;
+            display: inline-block;
         }
-        .volver{
-            display:inline-block;
+        .volver {
+            display: inline-block;
             margin-top: 14px;
             color: #ff5555;
             font-size: 12px;
             text-decoration: none;
+            cursor: pointer;
         }
+        .volver:hover { text-decoration: underline; color: #ff8080; }
     </style>
 </head>
 <body>
@@ -116,37 +138,44 @@
         <h2>ACCESO</h2>
         <input type="text" id="usuario" placeholder="Usuario">
         <input type="password" id="password" placeholder="Contraseña">
-        <button onclick="validarLogin()">fuck</button>
+        <button onclick="validarLogin()">Entrar</button>
     </div>
 
     <!-- Panel de Contenido -->
     <div class="container hidden" id="panel-box">
-        <div class="success">✓</div>
-        <h2 style="color: #ff3333; margin-top: 0;">PANEL AGG</h2>
+        <h2 style="color: #ff3333; margin: 0 0 10px 0;">PANEL AGG</h2>
 
-        <select id="categoria">
-            <option value="peliculas">Películas</option>
-            <option value="series">Series</option>
+        <select id="categoria" onchange="toggleCamposSeries()">
+            <option value="peliculas">Película</option>
+            <option value="series">Serie / Capítulos</option>
             <option value="adultos">+18 (Exclusivo)</option>
         </select>
+        
+        <input type="text" id="titulo" placeholder="Título (ej: Breaking Bad)">
+        
+        <div id="camposSerie" class="hidden">
+            <input type="text" id="capitulo_info" placeholder="Episodio (ej: T1E01 - Piloto)">
+        </div>
+
         <input type="text" id="imagen_url" placeholder="Imagen URL (portada)">
-        <input type="text" id="titulo" placeholder="Título">
         <input type="text" id="video_url" placeholder="Link del video (.mp4, etc.)">
-        <textarea id="descripcion" placeholder="Descripción / etiqueta..."></textarea>
-        <label style="display:flex;align-items:center;gap:6px;color:#ff8080;font-size:12px;width:90%;margin:4px auto;">
+        <textarea id="descripcion" placeholder="Descripción / Etiquetas..."></textarea>
+        
+        <label style="display:flex;align-items:center;gap:6px;color:#ff8080;font-size:11px;width:95%;margin:4px auto;">
             <input type="checkbox" id="censurado" style="width:auto;margin:0;">
             Difuminar portada (+18)
         </label>
-        <button onclick="agregarContenido()">AGG</button>
-        <button class="btn-secundario" onclick="descargarTxt()">Descargar listado (.txt)</button>
 
-        <div class="lista-wrap" id="listaActual"></div>
+        <button onclick="agregarContenido()">Guardar en la Nube</button>
 
-        <a class="volver" href="paputv.html">&larr; Volver a Papu T:v</a>
+        <h4 style="margin: 15px 0 5px 0; color: #ff5555;">Contenido en Firebase</h4>
+        <div class="lista-wrap" id="listaActual">Cargando...</div>
+
+        <a class="volver" onclick="window.history.back(); return false;">&larr; Volver a Papu T:v</a>
     </div>
 
     <script>
-        const CLAVE_CATALOGO = "papuTvCatalogo";
+        let catalogoActual = [];
 
         function validarLogin() {
             let u = document.getElementById("usuario").value;
@@ -155,39 +184,45 @@
             if (u === "Hill" && p === "123") {
                 document.getElementById("login-box").classList.add("hidden");
                 document.getElementById("panel-box").classList.remove("hidden");
-                renderLista();
+                escucharFirebase();
             } else {
-                alert("Acceso denegado, sapegato.");
+                alert("Acceso denegado.");
             }
         }
 
-        function obtenerCatalogo() {
-            try {
-                return JSON.parse(localStorage.getItem(CLAVE_CATALOGO)) || [];
-            } catch (e) {
-                return [];
-            }
+        function toggleCamposSeries() {
+            const cat = document.getElementById("categoria").value;
+            document.getElementById("camposSerie").classList.toggle("hidden", cat !== "series");
         }
 
-        function guardarCatalogo(catalogo) {
-            localStorage.setItem(CLAVE_CATALOGO, JSON.stringify(catalogo));
+        function escucharFirebase() {
+            db.ref('catalogo').on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                catalogoActual = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                renderLista();
+            });
         }
 
         function agregarContenido() {
             const categoria = document.getElementById("categoria").value;
+            let titulo = document.getElementById("titulo").value.trim();
+            const capituloInfo = document.getElementById("capitulo_info").value.trim();
             const imgUrl = document.getElementById("imagen_url").value.trim();
-            const titulo = document.getElementById("titulo").value.trim();
             const videoUrl = document.getElementById("video_url").value.trim();
-            const descripcion = document.getElementById("descripcion").value.trim();
+            let descripcion = document.getElementById("descripcion").value.trim();
             const censurado = document.getElementById("censurado").checked;
 
             if (!titulo || !videoUrl) {
-                alert("Como mínimo necesitás el Título y el Link del video.");
+                alert("Ingresa al menos Título y Link del video.");
                 return;
             }
 
+            if (categoria === "series" && capituloInfo) {
+                descripcion = capituloInfo + (descripcion ? " | " + descripcion : "");
+            }
+
+            const nuevoId = Date.now().toString();
             const item = {
-                id: Date.now(),
                 categoria: categoria,
                 titulo: titulo,
                 imagen: imgUrl,
@@ -197,65 +232,56 @@
                 fecha: new Date().toLocaleString()
             };
 
-            const catalogo = obtenerCatalogo();
-            catalogo.push(item);
-            guardarCatalogo(catalogo);
+            db.ref('catalogo/' + nuevoId).set(item, (err) => {
+                if (err) {
+                    alert("Error al subir contenido.");
+                } else {
+                    document.getElementById("titulo").value = "";
+                    document.getElementById("capitulo_info").value = "";
+                    document.getElementById("imagen_url").value = "";
+                    document.getElementById("video_url").value = "";
+                    document.getElementById("descripcion").value = "";
+                    document.getElementById("censurado").checked = false;
+                    alert("¡Agregado exitosamente a Firebase!");
+                }
+            });
+        }
 
-            // Limpiar formulario
-            document.getElementById("imagen_url").value = "";
-            document.getElementById("titulo").value = "";
-            document.getElementById("video_url").value = "";
-            document.getElementById("descripcion").value = "";
-            document.getElementById("censurado").checked = false;
+        function reemplazarLink(id, linkActual) {
+            const nuevoLink = prompt("Nuevo link del video:", linkActual);
+            if (nuevoLink && nuevoLink.trim() !== "") {
+                db.ref('catalogo/' + id + '/video').set(nuevoLink.trim());
+            }
+        }
 
-            renderLista();
-            alert("¡Contenido agregado! Ya aparece en Papu T:v.");
+        function eliminarItem(id) {
+            if (confirm("¿Deseas eliminar este elemento?")) {
+                db.ref('catalogo/' + id).remove();
+            }
         }
 
         function renderLista() {
-            const catalogo = obtenerCatalogo();
             const wrap = document.getElementById("listaActual");
-            if (catalogo.length === 0) {
-                wrap.innerHTML = "<em>Todavía no agregaste nada.</em>";
+            if (catalogoActual.length === 0) {
+                wrap.innerHTML = "<em>No hay elementos subidos aún.</em>";
                 return;
             }
-            wrap.innerHTML = catalogo
+
+            wrap.innerHTML = catalogoActual
                 .slice()
                 .reverse()
-                .map(it => `<div class="lista-item">[${it.categoria}] ${it.titulo}</div>`)
+                .map(it => `
+                    <div class="lista-item">
+                        <div>
+                            <strong>[${it.categoria}]</strong> ${it.titulo}
+                        </div>
+                        <div class="acciones-item">
+                            <button onclick="reemplazarLink('${it.id}', '${it.video}')" title="Editar link">✏️ Link</button>
+                            <button onclick="eliminarItem('${it.id}')" style="background:#8b0000;" title="Eliminar">🗑️</button>
+                        </div>
+                    </div>
+                `)
                 .join("");
-        }
-
-        function descargarTxt() {
-            const catalogo = obtenerCatalogo();
-            if (catalogo.length === 0) {
-                alert("Todavía no hay contenido para exportar.");
-                return;
-            }
-
-            let texto = "LISTADO DE CONTENIDO - PAPU T:V\n";
-            texto += "Generado: " + new Date().toLocaleString() + "\n";
-            texto += "=".repeat(50) + "\n\n";
-
-            catalogo.forEach((it, i) => {
-                texto += `${i + 1}. TITULO: ${it.titulo}\n`;
-                texto += `   CATEGORIA: ${it.categoria}\n`;
-                texto += `   IMAGEN: ${it.imagen || "(sin imagen)"}\n`;
-                texto += `   VIDEO: ${it.video}\n`;
-                texto += `   DESCRIPCION: ${it.descripcion || "(sin descripcion)"}\n`;
-                texto += `   CENSURADO: ${it.censurado ? "si" : "no"}\n`;
-                texto += `   AGREGADO: ${it.fecha}\n\n`;
-            });
-
-            const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "papu-tv-listado.txt";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
     </script>
 </body>
