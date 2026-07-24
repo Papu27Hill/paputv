@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Oculto - El Papu TV</title>
+    <style>
+        body {
+            background-color: #050505;
+            color: #ff1a1a;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: radial-gradient(circle, #2a0000 0%, #050505 85%);
+        }
+        .container {
+            background: rgba(10, 0, 0, 0.95);
+            border: 2px solid #8b0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.4), inset 0 0 20px rgba(139, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 8px;
+            width: 320px;
+            text-align: center;
+        }
+        .img-banner {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ff0000;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px #ff0000;
+        }
+        input, textarea, select {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+            background: #120000;
+            border: 1px solid #ff1a1a;
+            color: #fff;
+            border-radius: 4px;
+            outline: none;
+            font-family: monospace;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #ff0000;
+            box-shadow: 0 0 8px #ff0000;
+        }
+        textarea {
+            height: 60px;
+            resize: none;
+        }
+        button {
+            background: linear-gradient(180deg, #ff1a1a 0%, #660000 100%);
+            color: white;
+            border: 1px solid #ff0000;
+            padding: 10px 20px;
+            width: 95%;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-top: 10px;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+            transition: 0.2s;
+        }
+        button:hover {
+            background: linear-gradient(180deg, #ff3333 0%, #8b0000 100%);
+            box-shadow: 0 0 15px #ff0000;
+        }
+        .hidden { display: none; }
+        .success {
+            font-size: 55px;
+            color: #00ff66;
+            text-shadow: 0 0 15px #00ff66;
+            margin-bottom: 5px;
+        }
+        .lista-wrap{
+            width: 90%;
+            max-height: 140px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 11px;
+            color: #ff8080;
+            border: 1px solid #440000;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 10px auto;
+        }
+        .lista-item{
+            border-bottom: 1px solid #330000;
+            padding: 4px 0;
+        }
+        .btn-secundario{
+            background: #1a0000;
+            border: 1px solid #660000;
+            box-shadow: none;
+            font-size: 12px;
+        }
+        .volver{
+            display:inline-block;
+            margin-top: 14px;
+            color: #ff5555;
+            font-size: 12px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login -->
+    <div class="container" id="login-box">
+        <img src="https://i.pinimg.com/1200x/66/1e/c3/661ec304307861f1bc855f598edc33df.jpg" class="img-banner" alt="Banner">
+        <h2>ACCESO</h2>
+        <input type="text" id="usuario" placeholder="Usuario">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="validarLogin()">fuck</button>
+    </div>
+
+    <!-- Panel de Contenido -->
+    <div class="container hidden" id="panel-box">
+        <div class="success">✓</div>
+        <h2 style="color: #ff3333; margin-top: 0;">PANEL AGG</h2>
+
+        <select id="categoria">
+            <option value="peliculas">Películas</option>
+            <option value="series">Series</option>
+            <option value="adultos">+18 (Exclusivo)</option>
+        </select>
+        <input type="text" id="imagen_url" placeholder="Imagen URL (portada)">
+        <input type="text" id="titulo" placeholder="Título">
+        <input type="text" id="video_url" placeholder="Link del video (.mp4, etc.)">
+        <textarea id="descripcion" placeholder="Descripción / etiqueta..."></textarea>
+        <label style="display:flex;align-items:center;gap:6px;color:#ff8080;font-size:12px;width:90%;margin:4px auto;">
+            <input type="checkbox" id="censurado" style="width:auto;margin:0;">
+            Difuminar portada (+18)
+        </label>
+        <button onclick="agregarContenido()">AGG</button>
+        <button class="btn-secundario" onclick="descargarTxt()">Descargar listado (.txt)</button>
+
+        <div class="lista-wrap" id="listaActual"></div>
+
+        <a class="volver" href="paputv.html">&larr; Volver a Papu T:v</a>
+    </div>
+
+    <script>
+        const CLAVE_CATALOGO = "papuTvCatalogo";
+
+        function validarLogin() {
+            let u = document.getElementById("usuario").value;
+            let p = document.getElementById("password").value;
+
+            if (u === "Hill" && p === "123") {
+                document.getElementById("login-box").classList.add("hidden");
+                document.getElementById("panel-box").classList.remove("hidden");
+                renderLista();
+            } else {
+                alert("Acceso denegado, sapegato.");
+            }
+        }
+
+        function obtenerCatalogo() {
+            try {
+                return JSON.parse(localStorage.getItem(CLAVE_CATALOGO)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function guardarCatalogo(catalogo) {
+            localStorage.setItem(CLAVE_CATALOGO, JSON.stringify(catalogo));
+        }
+
+        function agregarContenido() {
+            const categoria = document.getElementById("categoria").value;
+            const imgUrl = document.getElementById("imagen_url").value.trim();
+            const titulo = document.getElementById("titulo").value.trim();
+            const videoUrl = document.getElementById("video_url").value.trim();
+            const descripcion = document.getElementById("descripcion").value.trim();
+            const censurado = document.getElementById("censurado").checked;
+
+            if (!titulo || !videoUrl) {
+                alert("Como mínimo necesitás el Título y el Link del video.");
+                return;
+            }
+
+            const item = {
+                id: Date.now(),
+                categoria: categoria,
+                titulo: titulo,
+                imagen: imgUrl,
+                video: videoUrl,
+                descripcion: descripcion,
+                censurado: censurado,
+                fecha: new Date().toLocaleString()
+            };
+
+            const catalogo = obtenerCatalogo();
+            catalogo.push(item);
+            guardarCatalogo(catalogo);
+
+            // Limpiar formulario
+            document.getElementById("imagen_url").value = "";
+            document.getElementById("titulo").value = "";
+            document.getElementById("video_url").value = "";
+            document.getElementById("descripcion").value = "";
+            document.getElementById("censurado").checked = false;
+
+            renderLista();
+            alert("¡Contenido agregado! Ya aparece en Papu T:v.");
+        }
+
+        function renderLista() {
+            const catalogo = obtenerCatalogo();
+            const wrap = document.getElementById("listaActual");
+            if (catalogo.length === 0) {
+                wrap.innerHTML = "<em>Todavía no agregaste nada.</em>";
+                return;
+            }
+            wrap.innerHTML = catalogo
+                .slice()
+                .reverse()
+                .map(it => `<div class="lista-item">[${it.categoria}] ${it.titulo}</div>`)
+                .join("");
+        }
+
+        function descargarTxt() {
+            const catalogo = obtenerCatalogo();
+            if (catalogo.length === 0) {
+                alert("Todavía no hay contenido para exportar.");
+                return;
+            }
+
+            let texto = "LISTADO DE CONTENIDO - PAPU T:V\n";
+            texto += "Generado: " + new Date().toLocaleString() + "\n";
+            texto += "=".repeat(50) + "\n\n";
+
+            catalogo.forEach((it, i) => {
+                texto += `${i + 1}. TITULO: ${it.titulo}\n`;
+                texto += `   CATEGORIA: ${it.categoria}\n`;
+                texto += `   IMAGEN: ${it.imagen || "(sin imagen)"}\n`;
+                texto += `   VIDEO: ${it.video}\n`;
+                texto += `   DESCRIPCION: ${it.descripcion || "(sin descripcion)"}\n`;
+                texto += `   CENSURADO: ${it.censurado ? "si" : "no"}\n`;
+                texto += `   AGREGADO: ${it.fecha}\n\n`;
+            });
+
+            const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "papu-tv-listado.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
