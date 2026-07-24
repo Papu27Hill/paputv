@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
     <script>
-      // Configuración con tus credenciales de Firebase
       const firebaseConfig = {
         apiKey: "AIzaSyCEKgeSj2UUCq7My6cEKFD8dzDdDG0z_Z8",
         authDomain: "papu-5f7fb.firebaseapp.com",
@@ -45,7 +44,7 @@
             box-shadow: 0 0 30px rgba(255, 0, 0, 0.4), inset 0 0 20px rgba(139, 0, 0, 0.7);
             padding: 25px;
             border-radius: 8px;
-            width: 360px;
+            width: 380px;
             text-align: center;
         }
         .img-banner {
@@ -92,6 +91,13 @@
             box-shadow: 0 0 15px #ff0000;
         }
         .hidden { display: none; }
+        .row-inputs {
+            display: flex;
+            gap: 6px;
+            width: 95%;
+            margin: 0 auto;
+        }
+        .row-inputs input { width: 50%; }
         .lista-wrap {
             width: 95%;
             max-height: 180px;
@@ -151,15 +157,22 @@
             <option value="adultos">+18 (Exclusivo)</option>
         </select>
         
-        <input type="text" id="titulo" placeholder="Título (ej: Breaking Bad)">
-        
         <div id="camposSerie" class="hidden">
-            <input type="text" id="capitulo_info" placeholder="Episodio (ej: T1E01 - Piloto)">
+            <!-- Selector para autocompletar serie cargada -->
+            <select id="select_serie_existente" onchange="cargarSerieExistente()">
+                <option value="">-- Seleccionar Serie Existente --</option>
+            </select>
+            <div class="row-inputs">
+                <input type="number" id="num_temporada" placeholder="Temp (ej: 1)" value="1">
+                <input type="number" id="num_capitulo" placeholder="Cap (ej: 1)">
+            </div>
+            <input type="text" id="nombre_capitulo" placeholder="Nombre del capítulo (opcional)">
         </div>
 
+        <input type="text" id="titulo" placeholder="Título de la Serie o Película">
         <input type="text" id="imagen_url" placeholder="Imagen URL (portada)">
-        <input type="text" id="video_url" placeholder="Link del video (.mp4, etc.)">
-        <textarea id="descripcion" placeholder="Descripción / Etiquetas..."></textarea>
+        <input type="text" id="video_url" placeholder="Link del video (.mp4, embed, etc.)">
+        <textarea id="descripcion" placeholder="Descripción / Detalles adicionales..."></textarea>
         
         <label style="display:flex;align-items:center;gap:6px;color:#ff8080;font-size:11px;width:95%;margin:4px auto;">
             <input type="checkbox" id="censurado" style="width:auto;margin:0;">
@@ -176,6 +189,7 @@
 
     <script>
         let catalogoActual = [];
+        let seriesExistentes = {};
 
         function validarLogin() {
             let u = document.getElementById("usuario").value;
@@ -199,14 +213,42 @@
             db.ref('catalogo').on('value', (snapshot) => {
                 const data = snapshot.val() || {};
                 catalogoActual = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                
+                // Mapear series únicas para el selector
+                seriesExistentes = {};
+                catalogoActual.forEach(it => {
+                    if (it.categoria === 'series' && it.titulo) {
+                        const clave = it.titulo.trim();
+                        if (!seriesExistentes[clave]) {
+                            seriesExistentes[clave] = { titulo: clave, imagen: it.imagen || "" };
+                        }
+                    }
+                });
+
+                actualizarSelectSeries();
                 renderLista();
             });
+        }
+
+        function actualizarSelectSeries() {
+            const sel = document.getElementById("select_serie_existente");
+            sel.innerHTML = '<option value="">-- Seleccionar Serie Existente --</option>';
+            Object.keys(seriesExistentes).forEach(s => {
+                sel.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+        }
+
+        function cargarSerieExistente() {
+            const val = document.getElementById("select_serie_existente").value;
+            if (val && seriesExistentes[val]) {
+                document.getElementById("titulo").value = seriesExistentes[val].titulo;
+                document.getElementById("imagen_url").value = seriesExistentes[val].imagen;
+            }
         }
 
         function agregarContenido() {
             const categoria = document.getElementById("categoria").value;
             let titulo = document.getElementById("titulo").value.trim();
-            const capituloInfo = document.getElementById("capitulo_info").value.trim();
             const imgUrl = document.getElementById("imagen_url").value.trim();
             const videoUrl = document.getElementById("video_url").value.trim();
             let descripcion = document.getElementById("descripcion").value.trim();
@@ -217,8 +259,18 @@
                 return;
             }
 
-            if (categoria === "series" && capituloInfo) {
-                descripcion = capituloInfo + (descripcion ? " | " + descripcion : "");
+            let temporadaNum = 1;
+            if (categoria === "series") {
+                temporadaNum = parseInt(document.getElementById("num_temporada").value) || 1;
+                const capNum = document.getElementById("num_capitulo").value.trim();
+                const capNombre = document.getElementById("nombre_capitulo").value.trim();
+
+                let epInfo = capNum ? `Capítulo ${capNum}` : '';
+                if (capNombre) epInfo += (epInfo ? `: ${capNombre}` : capNombre);
+                
+                if (epInfo) {
+                    descripcion = epInfo + (descripcion ? " | " + descripcion : "");
+                }
             }
 
             const nuevoId = Date.now().toString();
@@ -228,6 +280,7 @@
                 imagen: imgUrl,
                 video: videoUrl,
                 descripcion: descripcion,
+                temporada: temporadaNum,
                 censurado: censurado,
                 fecha: new Date().toLocaleString()
             };
@@ -236,13 +289,11 @@
                 if (err) {
                     alert("Error al subir contenido.");
                 } else {
-                    document.getElementById("titulo").value = "";
-                    document.getElementById("capitulo_info").value = "";
-                    document.getElementById("imagen_url").value = "";
+                    document.getElementById("num_capitulo").value = "";
+                    document.getElementById("nombre_capitulo").value = "";
                     document.getElementById("video_url").value = "";
                     document.getElementById("descripcion").value = "";
-                    document.getElementById("censurado").checked = false;
-                    alert("¡Agregado exitosamente a Firebase!");
+                    alert("¡Capítulo / Contenido guardado correctamente!");
                 }
             });
         }
@@ -273,7 +324,7 @@
                 .map(it => `
                     <div class="lista-item">
                         <div>
-                            <strong>[${it.categoria}]</strong> ${it.titulo}
+                            <strong>[${it.categoria}]</strong> ${it.titulo} ${it.temporada ? '(T'+it.temporada+')' : ''}
                         </div>
                         <div class="acciones-item">
                             <button onclick="reemplazarLink('${it.id}', '${it.video}')" title="Editar link">✏️ Link</button>

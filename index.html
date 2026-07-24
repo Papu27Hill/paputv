@@ -13,7 +13,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-  // Configuración con tus credenciales de Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCEKgeSj2UUCq7My6cEKFD8dzDdDG0z_Z8",
     authDomain: "papu-5f7fb.firebaseapp.com",
@@ -41,6 +40,7 @@
     --muted: #8d859e;
     --line: #221a36;
     --danger: #ff4d6d;
+    --success: #28a745;
   }
 
   *{ box-sizing: border-box; margin:0; padding:0; }
@@ -135,7 +135,8 @@
   .close-btn:focus,
   .btn-flotante-papu:focus,
   .btn-flotante-sugerencias:focus,
-  .search-box:focus {
+  .search-box:focus,
+  .btn-legal:focus {
     outline: 3px solid var(--purple-light) !important;
     outline-offset: -2px;
     background: var(--panel-2);
@@ -296,6 +297,7 @@
     align-items: center;
     z-index: 9999;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
   }
 
   .btn-flotante-papu img {
@@ -303,6 +305,7 @@
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+    pointer-events: none;
   }
 
   .btn-flotante-papu:hover, .btn-flotante-papu:focus {
@@ -326,6 +329,7 @@
     align-items: center;
     z-index: 9999;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
   }
 
   .btn-flotante-sugerencias img {
@@ -333,6 +337,7 @@
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+    pointer-events: none;
   }
 
   .btn-flotante-sugerencias:hover, .btn-flotante-sugerencias:focus {
@@ -341,15 +346,17 @@
     outline: none;
   }
 
+  /* Modal con difuminado */
   .modal-bg{
     display: none;
     position: fixed; inset: 0;
-    background: rgba(5, 3, 9, 0.9);
-    backdrop-filter: blur(8px);
-    z-index: 50;
+    background: rgba(5, 3, 9, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 100;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+    padding: 20px;
   }
   .modal-bg.open{ display: flex; }
 
@@ -359,7 +366,7 @@
     border-radius: 12px;
     width: min(900px, 100%);
     overflow: hidden;
-    box-shadow: 0 0 30px rgba(157, 78, 221, 0.2);
+    box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
   }
 
   .player-wrapper {
@@ -397,6 +404,110 @@
   }
   .close-btn:hover, .close-btn:focus{ color: var(--text); border-color: var(--purple-light); outline: none; }
 
+  /* Lista de temporadas y episodios */
+  .season-header {
+    background: var(--panel-2);
+    color: var(--purple-light);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .episode-list{
+    display: flex;
+    flex-direction: column;
+    max-height: min(60vh, 480px);
+    overflow-y: auto;
+    background: var(--panel);
+  }
+  .episode-pick{
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    transition: background .15s ease;
+  }
+  .episode-pick:hover, .episode-pick:focus-visible{
+    background: var(--panel-2);
+    outline: none;
+  }
+  .episode-pick .ep-num{
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--purple-light);
+    min-width: 28px;
+  }
+  .episode-pick .ep-label{ font-size: 14px; }
+
+  .back-to-episodes{
+    all: unset;
+    cursor: pointer;
+    color: var(--purple-light);
+    font-size: 12px;
+    margin-right: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background .15s ease;
+  }
+  .back-to-episodes:hover, .back-to-episodes:focus-visible{
+    background: var(--panel-2);
+    outline: none;
+  }
+
+  /* Modal Legal */
+  .modal-legal {
+    max-width: 550px;
+    padding: 28px;
+    text-align: center;
+  }
+  .modal-legal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--purple-light);
+    margin-bottom: 14px;
+  }
+  .modal-legal p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+    text-align: justify;
+  }
+  .modal-legal .legal-box {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: justify;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .modal-legal .legal-box strong { color: var(--text); }
+  .btn-legal {
+    all: unset;
+    cursor: pointer;
+    background: var(--success);
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 12px 36px;
+    border-radius: 25px;
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
+    transition: transform 0.15s ease;
+  }
+  .btn-legal:hover, .btn-legal:focus {
+    transform: scale(1.05);
+  }
+
   @media (max-width: 720px){
     body{ grid-template-columns: 1fr; }
     aside{ position: relative; height: auto; flex-direction: row; overflow-x: auto; padding: 16px 0; border-right: none; border-bottom: 1px solid var(--line); }
@@ -432,13 +543,29 @@
   <div id="rows"></div>
 </main>
 
-<a href="mailto:" class="btn-flotante-sugerencias" title="Pedir contenido" tabindex="0" onclick="alert('Envía solicitudes de películas para aportar el contenido que quieres.');">
+<button class="btn-flotante-sugerencias" title="Pedir contenido" tabindex="0" onclick="playClickSound(); document.getElementById('modalSugerencias').classList.add('open');">
     <img src="https://i.pinimg.com/originals/4d/69/ac/4d69acc3793c1fd49b1cec20eddd9408.gif" alt="Sugerencias">
-</a>
+</button>
 
 <a href="panel.html" class="btn-flotante-papu" title="Panel Oculto" tabindex="0">
     <img src="https://i.pinimg.com/736x/96/5f/c1/965fc198184680345b68fda7c2766ea2.jpg" alt="Panel Oculto">
 </a>
+
+<!-- Modal Legal -->
+<div class="modal-bg open" id="modalLegal">
+  <div class="modal modal-legal">
+    <h2>AVISO LEGAL Y DE TRANSPARENCIA</h2>
+    <p>
+      <strong>Papu T:v</strong> es una página web totalmente libre de piratería y de carácter strictly colaborativo. Esta plataforma no almacena, aloja ni distribuye ningún tipo de archivo audiovisual o película en sus servidores. Todos los enlaces son aportados por la comunidad de usuarios.
+    </p>
+    <div class="legal-box">
+      <strong>Sustento Legal (Constitución de la República Bolivariana de Venezuela):</strong><br>
+      • <strong>Art. 110:</strong> Se reconoce el interés público de la ciencia, la tecnología y el libre acceso a la información.<br>
+      • <strong>Art. 28:</strong> Garantiza el derecho de toda persona a acceder a la información y datos en redes libres.
+    </div>
+    <button class="btn-legal" id="btnAceptarLegal" tabindex="0" onclick="aceptarLegal()">Entiendo.</button>
+  </div>
+</div>
 
 <div class="modal-bg" id="modalBg">
   <div class="modal">
@@ -446,6 +573,22 @@
     <div class="modal-head">
       <h3 id="modalTitle"></h3>
       <button class="close-btn" id="closeBtn" tabindex="0">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Sugerencias Corregido -->
+<div class="modal-bg" id="modalSugerencias">
+  <div class="modal modal-sugerencias">
+    <div class="sugerencias-body" style="padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+      <img class="sugerencias-icono" src="https://i.pinimg.com/originals/4d/69/ac/4d69acc3793c1fd49b1cec20eddd9408.gif" alt="Sugerencias" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; pointer-events: none;">
+      <h3 style="color: var(--purple-light); font-size: 20px;">¿Falta algo en Papu T:v?</h3>
+      <p style="color: var(--muted); font-size: 13px;">Escribinos qué película, serie o idea te gustaría ver acá.</p>
+      <a href="mailto:Richard27colina@gmail.com?subject=Sugerencia%20Papu%20T%3Av" class="btn-enviar-sugerencia" target="_blank" style="display: inline-block; margin-top: 10px; padding: 10px 24px; background: var(--purple-light); color: #000; font-weight: 600; text-decoration: none; border-radius: 20px; transition: transform 0.2s ease;">Enviar por correo</a>
+    </div>
+    <div class="modal-head">
+      <span></span>
+      <button class="close-btn" tabindex="0" onclick="playClickSound(); document.getElementById('modalSugerencias').classList.remove('open');">Cerrar</button>
     </div>
   </div>
 </div>
@@ -471,6 +614,11 @@
     } catch (e) {}
   }
 
+  function aceptarLegal() {
+    playClickSound();
+    document.getElementById('modalLegal').classList.remove('open');
+  }
+
   const CATEGORIAS_BASE = {
     peliculas: { label: "Películas", items: [] },
     series: { label: "Series", items: [] },
@@ -486,14 +634,14 @@
   const pageTitle = document.getElementById('pageTitle');
   const pageCount = document.getElementById('pageCount');
 
-  // Lectura en tiempo real desde Firebase DB
+  // Lectura desde Firebase DB
   db.ref('catalogo').on('value', (snapshot) => {
     const rawData = snapshot.val() || {};
     const guardados = Object.values(rawData);
     const dataFinal = JSON.parse(JSON.stringify(CATEGORIAS_BASE));
 
     guardados.forEach(it => {
-      if (!it) return;
+      if (!it || it.categoria === 'series') return;
       const cat = dataFinal[it.categoria] ? it.categoria : "peliculas";
       dataFinal[cat].items.push({
         title: it.titulo,
@@ -504,8 +652,49 @@
       });
     });
 
+    // Agrupación optimizada de Series por Temporadas
+    const grupos = {};
+    guardados.forEach(it => {
+      if (!it || it.categoria !== 'series') return;
+      const clave = (it.titulo || '').trim().toLowerCase();
+      if (!grupos[clave]) {
+        grupos[clave] = { title: it.titulo, poster: '', censored: false, seasons: {} };
+      }
+      const grupo = grupos[clave];
+      if (!grupo.poster && it.imagen) grupo.poster = it.imagen;
+      if (it.censurado) grupo.censored = true;
+
+      const tempNum = it.temporada || 1;
+      if (!grupo.seasons[tempNum]) grupo.seasons[tempNum] = [];
+
+      grupo.seasons[tempNum].push({
+        label: it.descripcion || `Episodio ${grupo.seasons[tempNum].length + 1}`,
+        src: it.video,
+        poster: it.imagen || grupo.poster,
+        censored: !!it.censurado
+      });
+    });
+
+    dataFinal.series.items = Object.values(grupos).map(g => {
+      let totalEps = 0;
+      Object.keys(g.seasons).forEach(s => totalEps += g.seasons[s].length);
+      const totalSeasons = Object.keys(g.seasons).length;
+      return {
+        title: g.title,
+        tag: `${totalSeasons} Temp · ${totalEps} Caps`,
+        poster: g.poster,
+        censored: g.censored,
+        seasons: g.seasons
+      };
+    });
+
     DATA = dataFinal;
     render();
+    
+    // Autofoco en botón legal si está abierto al cargar
+    if (document.getElementById('modalLegal').classList.contains('open')) {
+      setTimeout(() => document.getElementById('btnAceptarLegal').focus(), 100);
+    }
   });
 
   function totalItems(){
@@ -583,7 +772,11 @@
         `;
         card.addEventListener('click', () => {
           playClickSound();
-          openPlayer(item);
+          if (item.seasons) {
+            openEpisodePicker(item);
+          } else {
+            openPlayer(item);
+          }
         });
         grid.appendChild(card);
       });
@@ -617,11 +810,57 @@
     if (!url) return false;
     const urlLower = url.toLowerCase();
     const directExtensions = ['.mp4', '.m3u8', '.mp3', '.webm', '.ogg', '.wav'];
-    return urlLower.includes('/embed/') || urlLower.includes('vidsrc') || urlLower.includes('iframe') || !directExtensions.some(ext => urlLower.includes(ext));
+    return urlLower.includes('/embed/') || urlLower.includes('iframe') || !directExtensions.some(ext => urlLower.includes(ext));
   }
 
-  function openPlayer(item){
+  function openEpisodePicker(item){
     modalTitle.textContent = item.title;
+    let htmlContent = `<div class="episode-list">`;
+
+    Object.keys(item.seasons).sort((a,b) => a - b).forEach(sNum => {
+      htmlContent += `<div class="season-header">Temporada ${sNum}</div>`;
+      item.seasons[sNum].forEach((ep, i) => {
+        htmlContent += `
+          <button class="episode-pick" tabindex="0" data-s="${sNum}" data-idx="${i}">
+            <span class="ep-num">E${i + 1}</span>
+            <span class="ep-label">${ep.label}</span>
+          </button>
+        `;
+      });
+    });
+
+    htmlContent += `</div>`;
+    playerContainer.innerHTML = htmlContent;
+
+    playerContainer.querySelectorAll('.episode-pick').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playClickSound();
+        const ep = item.seasons[btn.dataset.s][Number(btn.dataset.idx)];
+        openPlayer({ title: `${item.title} — T${btn.dataset.s}: ${ep.label}`, src: ep.src }, item);
+      });
+    });
+
+    modalBg.classList.add('open');
+    const first = playerContainer.querySelector('.episode-pick');
+    if (first) first.focus();
+  }
+
+  function openPlayer(item, grupoOrigen){
+    modalTitle.innerHTML = '';
+
+    if (grupoOrigen) {
+      const back = document.createElement('button');
+      back.className = 'back-to-episodes';
+      back.textContent = '← Capítulos';
+      back.tabIndex = 0;
+      back.addEventListener('click', () => { playClickSound(); openEpisodePicker(grupoOrigen); });
+      modalTitle.appendChild(back);
+    }
+
+    const span = document.createElement('span');
+    span.textContent = item.title;
+    modalTitle.appendChild(span);
+
     const url = item.src || '';
 
     if (isEmbedUrl(url)) {
@@ -640,16 +879,29 @@
     modalBg.classList.remove('open');
   }
 
+  const modalSugerencias = document.getElementById('modalSugerencias');
+
   closeBtn.addEventListener('click', closePlayer);
   modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closePlayer(); });
+  modalSugerencias.addEventListener('click', (e) => {
+    if (e.target === modalSugerencias) {
+      playClickSound();
+      modalSugerencias.classList.remove('open');
+    }
+  });
 
-  // Navegación con flechitas + Reproducción del sonido
+  // Navegación con mando / teclado
   document.addEventListener('keydown', (e) => {
     const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
-    if (e.key === 'Escape' && modalBg.classList.contains('open')) {
-      closePlayer();
-      return;
+    if (e.key === 'Escape') {
+      if (document.getElementById('modalLegal').classList.contains('open')) return;
+      if (modalBg.classList.contains('open')) { closePlayer(); return; }
+      if (modalSugerencias.classList.contains('open')) {
+        playClickSound();
+        modalSugerencias.classList.remove('open');
+        return;
+      }
     }
 
     if (!arrowKeys.includes(e.key)) return;
@@ -660,8 +912,14 @@
 
     e.preventDefault();
 
-    const isModalOpen = modalBg.classList.contains('open');
-    const container = isModalOpen ? modalBg : document;
+    const isLegalOpen = document.getElementById('modalLegal').classList.contains('open');
+    const isModalOpen = modalBg.classList.contains('open') || modalSugerencias.classList.contains('open') || isLegalOpen;
+    
+    let container = document;
+    if (isLegalOpen) container = document.getElementById('modalLegal');
+    else if (modalBg.classList.contains('open')) container = modalBg;
+    else if (modalSugerencias.classList.contains('open')) container = modalSugerencias;
+
     const focusables = Array.from(container.querySelectorAll('button:not([disabled]), input, a[href], video, iframe, [tabindex="0"]'))
       .filter(el => el.offsetParent !== null && window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).visibility !== 'hidden');
 
