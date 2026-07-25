@@ -8,15 +8,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="icon.png">
 
-<!-- Anti-redirección y anti-popups global -->
+<!-- Anti-redirección y anti-popups global a nivel de ventana -->
 <script>
-  // Bloquear apertura de nuevas pestañas/ventanas emergentes
+  // Anular la apertura de ventanas emergentes/publicidad
   window.open = function() { return null; };
-  
-  // Evitar que la página principal sea redirigida por un iframe ajeno
-  window.onbeforeunload = function() {
-    // Silencia intentos de navegación no deseados
-  };
+
+  // Evitar que reproductores externos redirijan la página principal
+  let paginaOriginal = window.location.href;
+  window.addEventListener('beforeunload', function (e) {
+    if (window.location.href !== paginaOriginal) {
+      window.location.href = paginaOriginal;
+    }
+  });
 </script>
 
 <!-- Scripts de Firebase CDN -->
@@ -412,6 +415,7 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     background: #000;
+    position: relative;
   }
 
   .player-wrapper video,
@@ -924,8 +928,8 @@
     const url = item.src || '';
 
     if (isEmbedUrl(url)) {
-      // Atributo sandbox activado para bloquear redirecciones y popups del iframe
-      playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`;
+      // Sin sandbox para no ser bloqueado por los servidores de video
+      playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
     } else {
       playerContainer.innerHTML = `<video id="player" src="${url}" controls tabindex="0" autoplay></video>`;
     }
