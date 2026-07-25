@@ -5,18 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Papu T:v</title>
 
-<!-- PWA Meta Tags para Android, PC e iOS (Modo App sin barra de navegador) -->
+<!-- PWA Meta Tags para Android, PC e iOS (Modo App Standalone a pantalla completa) -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Papu T:v">
 <meta name="theme-color" content="#09070f">
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href='data:application/manifest+json,{"name":"Papu T:v","short_name":"PapuTV","start_url":"./","display":"standalone","background_color":"#09070f","theme_color":"#09070f","icons":[{"src":"icon.png","sizes":"192x192","type":"image/png"}]}'>
+
+<!-- Íconos de la Aplicación -->
+<link rel="apple-touch-icon" href="iconapp.jpg">
+<link rel="icon" type="image/jpeg" href="iconapp.jpg">
+
+<!-- Manifiesto de Aplicación Web PWA (Optimizado para PC, Android e iOS) -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"Papu T:v","short_name":"PapuTV","start_url":"./","display":"standalone","orientation":"any","background_color":"#09070f","theme_color":"#09070f","icons":[{"src":"iconapp.jpg","sizes":"192x192","type":"image/jpeg","purpose":"any maskable"},{"src":"iconapp.jpg","sizes":"512x512","type":"image/jpeg","purpose":"any maskable"}]}'>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="icon.png">
 
 <!-- Scripts de Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -384,7 +388,7 @@
     outline: none;
   }
 
-  /* Modal con difuminado */
+  /* Modales */
   .modal-bg{
     display: none;
     position: fixed; inset: 0;
@@ -443,7 +447,6 @@
   }
   .close-btn:hover, .close-btn:focus{ color: var(--text); border-color: var(--purple-light); outline: none; }
 
-  /* Lista de temporadas y episodios */
   .season-header {
     background: var(--panel-2);
     color: var(--purple-light);
@@ -501,7 +504,7 @@
 
   /* Modales Genéricos */
   .modal-legal, .modal-install-info {
-    max-width: 550px;
+    max-width: 580px;
     padding: 28px;
     text-align: center;
   }
@@ -522,8 +525,8 @@
   .modal-legal .legal-box, .modal-install-info .install-steps {
     background: var(--panel-2);
     border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 12px 16px;
+    border-radius: 10px;
+    padding: 16px;
     font-size: 13px;
     color: var(--muted);
     text-align: left;
@@ -531,6 +534,18 @@
     margin-bottom: 20px;
   }
   .modal-legal .legal-box strong, .modal-install-info .install-steps strong { color: var(--text); }
+  
+  .app-icon-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 18px;
+    object-fit: cover;
+    margin: 0 auto 15px;
+    display: block;
+    border: 2px solid var(--purple-light);
+    box-shadow: 0 0 20px var(--purple-glow);
+  }
+
   .btn-legal {
     all: unset;
     cursor: pointer;
@@ -567,7 +582,7 @@
 
 <aside>
   <div class="brand">
-    <img src="icon.png" alt="Papu T:v Icon">
+    <img src="iconapp.jpg" alt="Papu T:v Icon">
     <div>PAPU <span>T:v</span></div>
   </div>
   <nav id="catNav"></nav>
@@ -581,7 +596,7 @@
     </div>
     <div class="header-actions">
       <button class="btn-install" id="btnInstall" onclick="instalarApp()" tabindex="0">
-        📲 Instalar App
+        📲 Instalar App (iOS, Android, PC)
       </button>
       <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()" tabindex="0">
     </div>
@@ -602,7 +617,7 @@
   <div class="modal modal-legal">
     <h2>AVISO LEGAL Y DE TRANSPARENCIA</h2>
     <p>
-      <strong>Papu T:v</strong> es una página web totalmente libre de piratería y de carácter estrictamente colaborativo. Esta plataforma no almacena, aloja ni distribuye ningún tipo de archivo audiovisual o película en sus servidores. Todos los enlaces son aportados por la comunidad de usuarios.
+      <strong>Papu T:v</strong> es una página web totalmente libre de piratería y de carácter strictly colaborativo. Esta plataforma no almacena, aloja ni distribuye ningún tipo de archivo audiovisual o película en sus servidores. Todos los enlaces son aportados por la comunidad de usuarios.
     </p>
     <div class="legal-box">
       <strong>Sustento Legal (Constitución de la República Bolivariana de Venezuela):</strong><br>
@@ -613,13 +628,14 @@
   </div>
 </div>
 
-<!-- Modal Instrucciones de Instalación iOS / Manual -->
+<!-- Modal Instrucciones de Instalación App (iPhone, Android, PC) -->
 <div class="modal-bg" id="modalInstallInfo">
   <div class="modal modal-install-info">
-    <h2>INSTALAR PAPU T:V</h2>
-    <p style="text-align:center;">Agrega Papu T:v a tu pantalla de inicio para abrirlo como una App en pantalla completa sin barra de navegación.</p>
+    <img src="iconapp.jpg" alt="Papu T:v Logo" class="app-icon-preview">
+    <h2>INSTALAR PAPU T:V COMO APP</h2>
+    <p style="text-align:center;">Instala la aplicación oficial en tu dispositivo para reproducir todo el contenido a pantalla completa y sin barra de direcciones.</p>
     <div class="install-steps" id="installStepsText">
-      <!-- Se llena dinámicamente con JS segun plataforma -->
+      <!-- Se llena dinámicamente según la plataforma detectada -->
     </div>
     <button class="btn-legal" style="background: var(--purple-light); color: #000;" tabindex="0" onclick="playClickSound(); document.getElementById('modalInstallInfo').classList.remove('open');">Entendido</button>
   </div>
@@ -653,15 +669,10 @@
 
 <script>
   /* --- SISTEMA ANTI-REDIRECCIÓN Y ANTI-POPUPS --- */
-  // Anula intentos de abrir ventanas flotantes externas/pestañas publicitarias
   window.open = function() { return null; };
+  window.onbeforeunload = function() {};
 
-  // Evita que reproductor embebido intente desviar la navegación principal fuera de Papu T:v
-  window.onbeforeunload = function() {
-    // Protección activa de navegación
-  };
-
-  /* --- REGISTRO DE SERVICE WORKER PARA CAPACIDAD PWA --- */
+  /* --- REGISTRO DE SERVICE WORKER PARA CAPACIDAD PWA COMPLETA --- */
   if ('serviceWorker' in navigator) {
     const swCode = `
       self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
@@ -680,29 +691,42 @@
 
   function instalarApp() {
     playClickSound();
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const installSteps = document.getElementById('installStepsText');
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-    } else if (isIOS) {
+      return;
+    }
+
+    if (isIOS) {
       installSteps.innerHTML = `
-        <strong>En tu iPhone / iPad:</strong><br>
-        1. Toca el botón <strong>Compartir</strong> ⎋ (en la parte inferior de Safari).<br>
-        2. Selecciona la opción <strong>"Agregar a inicio"</strong> ➕.<br>
-        3. ¡Listo! Se creará el acceso directo para abrir Papu T:v en pantalla completa.
+        <strong style="color:var(--purple-light);">📱 En tu iPhone / iPad (Safari):</strong><br><br>
+        1. Toca el botón <strong>Compartir</strong> ⎋ (el icono cuadrado con flecha abajo en Safari).<br>
+        2. Desplázate hacia abajo y selecciona <strong>"Agregar a inicio"</strong> ➕.<br>
+        3. Presiona <strong>"Agregar"</strong> arriba a la derecha.<br><br>
+        <em>¡Listo! Aparecerá la App con su ícono oficial en tu pantalla principal y abrirá a pantalla completa.</em>
       `;
-      document.getElementById('modalInstallInfo').classList.add('open');
+    } else if (/Android/i.test(userAgent)) {
+      installSteps.innerHTML = `
+        <strong style="color:var(--purple-light);">🤖 En tu Android (Chrome / Brave / Opera):</strong><br><br>
+        1. Toca los <strong>3 puntos</strong> ⋮ del menú del navegador arriba a la derecha.<br>
+        2. Selecciona la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.<br>
+        3. Confirma la instalación.<br><br>
+        <em>La app se instalará en tu menú de aplicaciones con el ícono oficial.</em>
+      `;
     } else {
       installSteps.innerHTML = `
-        <strong>En Android / PC / Navegador:</strong><br>
-        1. Toca los <strong>3 puntos</strong> de menú arriba en tu navegador.<br>
-        2. Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.<br>
-        3. Se abrirá directo sin barras molestas de navegación.
+        <strong style="color:var(--purple-light);">💻 En tu Computadora (Chrome / Edge / Brave):</strong><br><br>
+        1. Haz clic en el ícono de <strong>Instalar App</strong> 📥 que aparece en la barra de direcciones (arriba a la derecha cerca de los marcadores).<br>
+        2. O presiona los <strong>3 puntos</strong> ⋮ del navegador ➔ <strong>"Guardar y compartir"</strong> ➔ <strong>"Instalar página como app"</strong>.<br><br>
+        <em>Se creará un acceso directo en tu escritorio con el logo oficial y abrirá como programa independiente.</em>
       `;
-      document.getElementById('modalInstallInfo').classList.add('open');
     }
+
+    document.getElementById('modalInstallInfo').classList.add('open');
   }
 
   let audioCtx = null;
@@ -745,7 +769,6 @@
   const pageTitle = document.getElementById('pageTitle');
   const pageCount = document.getElementById('pageCount');
 
-  // Lectura desde Firebase DB
   db.ref('catalogo').on('value', (snapshot) => {
     const rawData = snapshot.val() || {};
     const guardados = Object.values(rawData);
@@ -763,7 +786,6 @@
       });
     });
 
-    // Agrupación optimizada de Series por Temporadas
     const grupos = {};
     guardados.forEach(it => {
       if (!it || it.categoria !== 'series') return;
@@ -973,7 +995,6 @@
 
     const url = item.src || '';
 
-    // Sandbox activado para bloquear redirecciones de la ventana padre y anuncios popup del iframe
     if (isEmbedUrl(url)) {
       playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>`;
     } else {
@@ -1001,7 +1022,7 @@
     }
   });
 
-  // Navegación con mando / teclado
+  // Navegación accesible
   document.addEventListener('keydown', (e) => {
     const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
@@ -1029,7 +1050,6 @@
 
     const isLegalOpen = document.getElementById('modalLegal').classList.contains('open');
     const isInstallOpen = document.getElementById('modalInstallInfo').classList.contains('open');
-    const isModalOpen = modalBg.classList.contains('open') || modalSugerencias.classList.contains('open') || isLegalOpen || isInstallOpen;
     
     let container = document;
     if (isLegalOpen) container = document.getElementById('modalLegal');
