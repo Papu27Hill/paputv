@@ -4,23 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Papu T:v</title>
-
-<!-- PWA Meta Tags para Android, PC e iOS (Modo App Standalone a pantalla completa) -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Papu T:v">
-<meta name="theme-color" content="#09070f">
-
-<!-- Íconos de la Aplicación -->
-<link rel="apple-touch-icon" href="iconapp.jpg">
-<link rel="icon" type="image/jpeg" href="iconapp.jpg">
-
-<!-- Manifiesto de Aplicación Web PWA (Optimizado para PC, Android e iOS) -->
-<link rel="manifest" href='data:application/manifest+json,{"name":"Papu T:v","short_name":"PapuTV","start_url":"./","display":"standalone","orientation":"any","background_color":"#09070f","theme_color":"#09070f","icons":[{"src":"iconapp.jpg","sizes":"192x192","type":"image/jpeg","purpose":"any maskable"},{"src":"iconapp.jpg","sizes":"512x512","type":"image/jpeg","purpose":"any maskable"}]}'>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="icon.png">
+
+<!-- Anti-redirección y anti-popups global -->
+<script>
+  // Bloquear apertura de nuevas pestañas/ventanas emergentes
+  window.open = function() { return null; };
+  
+  // Evitar que la página principal sea redirigida por un iframe ajeno
+  window.onbeforeunload = function() {
+    // Silencia intentos de navegación no deseados
+  };
+</script>
 
 <!-- Scripts de Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -200,7 +197,7 @@
     border-radius: 20px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     box-shadow: 0 0 12px var(--purple-glow);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
@@ -388,14 +385,14 @@
     outline: none;
   }
 
-  /* Modales */
+  /* Modal con difuminado */
   .modal-bg{
     display: none;
     position: fixed; inset: 0;
     background: rgba(5, 3, 9, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    z-index: 1000;
+    z-index: 100;
     align-items: center;
     justify-content: center;
     padding: 20px;
@@ -415,7 +412,6 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     background: #000;
-    position: relative;
   }
 
   .player-wrapper video,
@@ -447,6 +443,7 @@
   }
   .close-btn:hover, .close-btn:focus{ color: var(--text); border-color: var(--purple-light); outline: none; }
 
+  /* Lista de temporadas y episodios */
   .season-header {
     background: var(--panel-2);
     color: var(--purple-light);
@@ -502,50 +499,38 @@
     outline: none;
   }
 
-  /* Modales Genéricos */
-  .modal-legal, .modal-install-info {
-    max-width: 580px;
+  /* Modal Legal e Instalación */
+  .modal-legal {
+    max-width: 550px;
     padding: 28px;
     text-align: center;
   }
-  .modal-legal h2, .modal-install-info h2 {
+  .modal-legal h2 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 28px;
     letter-spacing: 1px;
     color: var(--purple-light);
     margin-bottom: 14px;
   }
-  .modal-legal p, .modal-install-info p {
+  .modal-legal p {
     font-size: 13px;
     color: var(--muted);
     line-height: 1.6;
     margin-bottom: 14px;
     text-align: justify;
   }
-  .modal-legal .legal-box, .modal-install-info .install-steps {
+  .modal-legal .legal-box {
     background: var(--panel-2);
     border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 8px;
+    padding: 12px 16px;
     font-size: 13px;
     color: var(--muted);
-    text-align: left;
+    text-align: justify;
     line-height: 1.6;
     margin-bottom: 20px;
   }
-  .modal-legal .legal-box strong, .modal-install-info .install-steps strong { color: var(--text); }
-  
-  .app-icon-preview {
-    width: 80px;
-    height: 80px;
-    border-radius: 18px;
-    object-fit: cover;
-    margin: 0 auto 15px;
-    display: block;
-    border: 2px solid var(--purple-light);
-    box-shadow: 0 0 20px var(--purple-glow);
-  }
-
+  .modal-legal .legal-box strong { color: var(--text); }
   .btn-legal {
     all: unset;
     cursor: pointer;
@@ -582,7 +567,7 @@
 
 <aside>
   <div class="brand">
-    <img src="iconapp.jpg" alt="Papu T:v Icon">
+    <img src="icon.png" alt="Papu T:v Icon">
     <div>PAPU <span>T:v</span></div>
   </div>
   <nav id="catNav"></nav>
@@ -595,8 +580,8 @@
       <span class="count" id="pageCount"></span>
     </div>
     <div class="header-actions">
-      <button class="btn-install" id="btnInstall" onclick="instalarApp()" tabindex="0">
-        📲 Instalar App (iOS, Android, PC)
+      <button class="btn-install" tabindex="0" onclick="playClickSound(); document.getElementById('modalInstallApp').classList.add('open');">
+        📲 Instalar App
       </button>
       <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()" tabindex="0">
     </div>
@@ -628,16 +613,17 @@
   </div>
 </div>
 
-<!-- Modal Instrucciones de Instalación App (iPhone, Android, PC) -->
-<div class="modal-bg" id="modalInstallInfo">
-  <div class="modal modal-install-info">
-    <img src="iconapp.jpg" alt="Papu T:v Logo" class="app-icon-preview">
-    <h2>INSTALAR PAPU T:V COMO APP</h2>
-    <p style="text-align:center;">Instala la aplicación oficial en tu dispositivo para reproducir todo el contenido a pantalla completa y sin barra de direcciones.</p>
-    <div class="install-steps" id="installStepsText">
-      <!-- Se llena dinámicamente según la plataforma detectada -->
+<!-- Modal Instrucciones de Instalación App -->
+<div class="modal-bg" id="modalInstallApp">
+  <div class="modal modal-legal" style="max-width: 480px;">
+    <h2>📲 INSTALAR EN EL TELÉFONO</h2>
+    <div class="legal-box" style="text-align: center;">
+      Para crear un acceso directo y usar la aplicación en tu pantalla de inicio:<br><br>
+      1. Toca el botón de los <strong>3 puntos (⋮)</strong> en la esquina superior derecha del navegador.<br>
+      2. Busca y selecciona la opción <strong>"Agregar a la pantalla de inicio"</strong> o <strong>"Instalar aplicación"</strong>.<br><br>
+      <em>¡Y listo! Ya la tendrás disponible como una App en tu teléfono.</em>
     </div>
-    <button class="btn-legal" style="background: var(--purple-light); color: #000;" tabindex="0" onclick="playClickSound(); document.getElementById('modalInstallInfo').classList.remove('open');">Entendido</button>
+    <button class="btn-legal" style="background: var(--purple-light); color: #000;" tabindex="0" onclick="playClickSound(); document.getElementById('modalInstallApp').classList.remove('open');">Entendido</button>
   </div>
 </div>
 
@@ -651,7 +637,7 @@
   </div>
 </div>
 
-<!-- Modal Sugerencias -->
+<!-- Modal Sugerencias Corregido -->
 <div class="modal-bg" id="modalSugerencias">
   <div class="modal modal-sugerencias">
     <div class="sugerencias-body" style="padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;">
@@ -668,67 +654,6 @@
 </div>
 
 <script>
-  /* --- SISTEMA ANTI-REDIRECCIÓN Y ANTI-POPUPS --- */
-  window.open = function() { return null; };
-  window.onbeforeunload = function() {};
-
-  /* --- REGISTRO DE SERVICE WORKER PARA CAPACIDAD PWA COMPLETA --- */
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-      self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
-      self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-      self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
-    `;
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
-  }
-
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  function instalarApp() {
-    playClickSound();
-    const installSteps = document.getElementById('installStepsText');
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const isIOS = /iPhone|iPad|iPod/i.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-      return;
-    }
-
-    if (isIOS) {
-      installSteps.innerHTML = `
-        <strong style="color:var(--purple-light);">📱 En tu iPhone / iPad (Safari):</strong><br><br>
-        1. Toca el botón <strong>Compartir</strong> ⎋ (el icono cuadrado con flecha abajo en Safari).<br>
-        2. Desplázate hacia abajo y selecciona <strong>"Agregar a inicio"</strong> ➕.<br>
-        3. Presiona <strong>"Agregar"</strong> arriba a la derecha.<br><br>
-        <em>¡Listo! Aparecerá la App con su ícono oficial en tu pantalla principal y abrirá a pantalla completa.</em>
-      `;
-    } else if (/Android/i.test(userAgent)) {
-      installSteps.innerHTML = `
-        <strong style="color:var(--purple-light);">🤖 En tu Android (Chrome / Brave / Opera):</strong><br><br>
-        1. Toca los <strong>3 puntos</strong> ⋮ del menú del navegador arriba a la derecha.<br>
-        2. Selecciona la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.<br>
-        3. Confirma la instalación.<br><br>
-        <em>La app se instalará en tu menú de aplicaciones con el ícono oficial.</em>
-      `;
-    } else {
-      installSteps.innerHTML = `
-        <strong style="color:var(--purple-light);">💻 En tu Computadora (Chrome / Edge / Brave):</strong><br><br>
-        1. Haz clic en el ícono de <strong>Instalar App</strong> 📥 que aparece en la barra de direcciones (arriba a la derecha cerca de los marcadores).<br>
-        2. O presiona los <strong>3 puntos</strong> ⋮ del navegador ➔ <strong>"Guardar y compartir"</strong> ➔ <strong>"Instalar página como app"</strong>.<br><br>
-        <em>Se creará un acceso directo en tu escritorio con el logo oficial y abrirá como programa independiente.</em>
-      `;
-    }
-
-    document.getElementById('modalInstallInfo').classList.add('open');
-  }
-
   let audioCtx = null;
 
   function playClickSound() {
@@ -769,6 +694,7 @@
   const pageTitle = document.getElementById('pageTitle');
   const pageCount = document.getElementById('pageCount');
 
+  // Lectura desde Firebase DB
   db.ref('catalogo').on('value', (snapshot) => {
     const rawData = snapshot.val() || {};
     const guardados = Object.values(rawData);
@@ -786,6 +712,7 @@
       });
     });
 
+    // Agrupación optimizada de Series por Temporadas
     const grupos = {};
     guardados.forEach(it => {
       if (!it || it.categoria !== 'series') return;
@@ -824,6 +751,7 @@
     DATA = dataFinal;
     render();
     
+    // Autofoco en botón legal si está abierto al cargar
     if (document.getElementById('modalLegal').classList.contains('open')) {
       setTimeout(() => document.getElementById('btnAceptarLegal').focus(), 100);
     }
@@ -996,7 +924,8 @@
     const url = item.src || '';
 
     if (isEmbedUrl(url)) {
-      playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>`;
+      // Atributo sandbox activado para bloquear redirecciones y popups del iframe
+      playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`;
     } else {
       playerContainer.innerHTML = `<video id="player" src="${url}" controls tabindex="0" autoplay></video>`;
     }
@@ -1012,6 +941,7 @@
   }
 
   const modalSugerencias = document.getElementById('modalSugerencias');
+  const modalInstallApp = document.getElementById('modalInstallApp');
 
   closeBtn.addEventListener('click', closePlayer);
   modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closePlayer(); });
@@ -1021,15 +951,22 @@
       modalSugerencias.classList.remove('open');
     }
   });
+  modalInstallApp.addEventListener('click', (e) => {
+    if (e.target === modalInstallApp) {
+      playClickSound();
+      modalInstallApp.classList.remove('open');
+    }
+  });
 
-  // Navegación accesible
+  // Navegación con mando / teclado
   document.addEventListener('keydown', (e) => {
     const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
     if (e.key === 'Escape') {
       if (document.getElementById('modalLegal').classList.contains('open')) return;
-      if (document.getElementById('modalInstallInfo').classList.contains('open')) {
-        document.getElementById('modalInstallInfo').classList.remove('open');
+      if (modalInstallApp.classList.contains('open')) {
+        playClickSound();
+        modalInstallApp.classList.remove('open');
         return;
       }
       if (modalBg.classList.contains('open')) { closePlayer(); return; }
@@ -1049,11 +986,11 @@
     e.preventDefault();
 
     const isLegalOpen = document.getElementById('modalLegal').classList.contains('open');
-    const isInstallOpen = document.getElementById('modalInstallInfo').classList.contains('open');
+    const isInstallOpen = modalInstallApp.classList.contains('open');
     
     let container = document;
     if (isLegalOpen) container = document.getElementById('modalLegal');
-    else if (isInstallOpen) container = document.getElementById('modalInstallInfo');
+    else if (isInstallOpen) container = modalInstallApp;
     else if (modalBg.classList.contains('open')) container = modalBg;
     else if (modalSugerencias.classList.contains('open')) container = modalSugerencias;
 
