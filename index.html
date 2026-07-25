@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Papu T:v</title>
+
+<!-- PWA Meta Tags para Android, PC e iOS (Modo App sin barra de navegador) -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Papu T:v">
+<meta name="theme-color" content="#09070f">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Papu T:v","short_name":"PapuTV","start_url":"./","display":"standalone","background_color":"#09070f","theme_color":"#09070f","icons":[{"src":"icon.png","sizes":"192x192","type":"image/png"}]}'>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="icon.png">
@@ -135,6 +145,7 @@
   .close-btn:focus,
   .btn-flotante-papu:focus,
   .btn-flotante-sugerencias:focus,
+  .btn-install:focus,
   .search-box:focus,
   .btn-legal:focus {
     outline: 3px solid var(--purple-light) !important;
@@ -166,6 +177,33 @@
   header.top .count{
     color: var(--muted);
     font-size: 13px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-install {
+    all: unset;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--purple) 0%, #6b21a8 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 12px var(--purple-glow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn-install:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px var(--purple-light);
   }
 
   .search-box {
@@ -353,7 +391,7 @@
     background: rgba(5, 3, 9, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    z-index: 100;
+    z-index: 1000;
     align-items: center;
     justify-content: center;
     padding: 20px;
@@ -373,6 +411,7 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     background: #000;
+    position: relative;
   }
 
   .player-wrapper video,
@@ -460,38 +499,38 @@
     outline: none;
   }
 
-  /* Modal Legal */
-  .modal-legal {
+  /* Modales Genéricos */
+  .modal-legal, .modal-install-info {
     max-width: 550px;
     padding: 28px;
     text-align: center;
   }
-  .modal-legal h2 {
+  .modal-legal h2, .modal-install-info h2 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 28px;
     letter-spacing: 1px;
     color: var(--purple-light);
     margin-bottom: 14px;
   }
-  .modal-legal p {
+  .modal-legal p, .modal-install-info p {
     font-size: 13px;
     color: var(--muted);
     line-height: 1.6;
     margin-bottom: 14px;
     text-align: justify;
   }
-  .modal-legal .legal-box {
+  .modal-legal .legal-box, .modal-install-info .install-steps {
     background: var(--panel-2);
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 12px 16px;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--muted);
-    text-align: justify;
-    line-height: 1.5;
+    text-align: left;
+    line-height: 1.6;
     margin-bottom: 20px;
   }
-  .modal-legal .legal-box strong { color: var(--text); }
+  .modal-legal .legal-box strong, .modal-install-info .install-steps strong { color: var(--text); }
   .btn-legal {
     all: unset;
     cursor: pointer;
@@ -518,7 +557,9 @@
     .cat-btn.nsfw-btn.active{ border-bottom-color: var(--danger); }
     main{ padding: 24px 16px 100px; }
     .grid{ grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .header-actions { width: 100%; flex-direction: column; align-items: stretch; }
     .search-box { width: 100%; }
+    .btn-install { justify-content: center; }
   }
 </style>
 </head>
@@ -538,7 +579,12 @@
       <h1 id="pageTitle">Inicio</h1>
       <span class="count" id="pageCount"></span>
     </div>
-    <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()" tabindex="0">
+    <div class="header-actions">
+      <button class="btn-install" id="btnInstall" onclick="instalarApp()" tabindex="0">
+        📲 Instalar App
+      </button>
+      <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()" tabindex="0">
+    </div>
   </header>
   <div id="rows"></div>
 </main>
@@ -556,7 +602,7 @@
   <div class="modal modal-legal">
     <h2>AVISO LEGAL Y DE TRANSPARENCIA</h2>
     <p>
-      <strong>Papu T:v</strong> es una página web totalmente libre de piratería y de carácter strictly colaborativo. Esta plataforma no almacena, aloja ni distribuye ningún tipo de archivo audiovisual o película en sus servidores. Todos los enlaces son aportados por la comunidad de usuarios.
+      <strong>Papu T:v</strong> es una página web totalmente libre de piratería y de carácter estrictamente colaborativo. Esta plataforma no almacena, aloja ni distribuye ningún tipo de archivo audiovisual o película en sus servidores. Todos los enlaces son aportados por la comunidad de usuarios.
     </p>
     <div class="legal-box">
       <strong>Sustento Legal (Constitución de la República Bolivariana de Venezuela):</strong><br>
@@ -564,6 +610,18 @@
       • <strong>Art. 28:</strong> Garantiza el derecho de toda persona a acceder a la información y datos en redes libres.
     </div>
     <button class="btn-legal" id="btnAceptarLegal" tabindex="0" onclick="aceptarLegal()">Entiendo.</button>
+  </div>
+</div>
+
+<!-- Modal Instrucciones de Instalación iOS / Manual -->
+<div class="modal-bg" id="modalInstallInfo">
+  <div class="modal modal-install-info">
+    <h2>INSTALAR PAPU T:V</h2>
+    <p style="text-align:center;">Agrega Papu T:v a tu pantalla de inicio para abrirlo como una App en pantalla completa sin barra de navegación.</p>
+    <div class="install-steps" id="installStepsText">
+      <!-- Se llena dinámicamente con JS segun plataforma -->
+    </div>
+    <button class="btn-legal" style="background: var(--purple-light); color: #000;" tabindex="0" onclick="playClickSound(); document.getElementById('modalInstallInfo').classList.remove('open');">Entendido</button>
   </div>
 </div>
 
@@ -577,7 +635,7 @@
   </div>
 </div>
 
-<!-- Modal Sugerencias Corregido -->
+<!-- Modal Sugerencias -->
 <div class="modal-bg" id="modalSugerencias">
   <div class="modal modal-sugerencias">
     <div class="sugerencias-body" style="padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;">
@@ -594,6 +652,59 @@
 </div>
 
 <script>
+  /* --- SISTEMA ANTI-REDIRECCIÓN Y ANTI-POPUPS --- */
+  // Anula intentos de abrir ventanas flotantes externas/pestañas publicitarias
+  window.open = function() { return null; };
+
+  // Evita que reproductor embebido intente desviar la navegación principal fuera de Papu T:v
+  window.onbeforeunload = function() {
+    // Protección activa de navegación
+  };
+
+  /* --- REGISTRO DE SERVICE WORKER PARA CAPACIDAD PWA --- */
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+      self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+      self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
+    `;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+  }
+
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  function instalarApp() {
+    playClickSound();
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const installSteps = document.getElementById('installStepsText');
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    } else if (isIOS) {
+      installSteps.innerHTML = `
+        <strong>En tu iPhone / iPad:</strong><br>
+        1. Toca el botón <strong>Compartir</strong> ⎋ (en la parte inferior de Safari).<br>
+        2. Selecciona la opción <strong>"Agregar a inicio"</strong> ➕.<br>
+        3. ¡Listo! Se creará el acceso directo para abrir Papu T:v en pantalla completa.
+      `;
+      document.getElementById('modalInstallInfo').classList.add('open');
+    } else {
+      installSteps.innerHTML = `
+        <strong>En Android / PC / Navegador:</strong><br>
+        1. Toca los <strong>3 puntos</strong> de menú arriba en tu navegador.<br>
+        2. Selecciona <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.<br>
+        3. Se abrirá directo sin barras molestas de navegación.
+      `;
+      document.getElementById('modalInstallInfo').classList.add('open');
+    }
+  }
+
   let audioCtx = null;
 
   function playClickSound() {
@@ -691,7 +802,6 @@
     DATA = dataFinal;
     render();
     
-    // Autofoco en botón legal si está abierto al cargar
     if (document.getElementById('modalLegal').classList.contains('open')) {
       setTimeout(() => document.getElementById('btnAceptarLegal').focus(), 100);
     }
@@ -863,8 +973,9 @@
 
     const url = item.src || '';
 
+    // Sandbox activado para bloquear redirecciones de la ventana padre y anuncios popup del iframe
     if (isEmbedUrl(url)) {
-      playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+      playerContainer.innerHTML = `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"></iframe>`;
     } else {
       playerContainer.innerHTML = `<video id="player" src="${url}" controls tabindex="0" autoplay></video>`;
     }
@@ -896,6 +1007,10 @@
 
     if (e.key === 'Escape') {
       if (document.getElementById('modalLegal').classList.contains('open')) return;
+      if (document.getElementById('modalInstallInfo').classList.contains('open')) {
+        document.getElementById('modalInstallInfo').classList.remove('open');
+        return;
+      }
       if (modalBg.classList.contains('open')) { closePlayer(); return; }
       if (modalSugerencias.classList.contains('open')) {
         playClickSound();
@@ -913,10 +1028,12 @@
     e.preventDefault();
 
     const isLegalOpen = document.getElementById('modalLegal').classList.contains('open');
-    const isModalOpen = modalBg.classList.contains('open') || modalSugerencias.classList.contains('open') || isLegalOpen;
+    const isInstallOpen = document.getElementById('modalInstallInfo').classList.contains('open');
+    const isModalOpen = modalBg.classList.contains('open') || modalSugerencias.classList.contains('open') || isLegalOpen || isInstallOpen;
     
     let container = document;
     if (isLegalOpen) container = document.getElementById('modalLegal');
+    else if (isInstallOpen) container = document.getElementById('modalInstallInfo');
     else if (modalBg.classList.contains('open')) container = modalBg;
     else if (modalSugerencias.classList.contains('open')) container = modalSugerencias;
 
