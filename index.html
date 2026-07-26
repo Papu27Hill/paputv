@@ -478,6 +478,14 @@
     letter-spacing: 1px;
     color: var(--purple-light);
     margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .modal-legal h2 img.control-icon {
+    height: 36px;
+    object-fit: contain;
   }
   .modal-legal p {
     font-size: 13px;
@@ -560,7 +568,7 @@
   <div class="modal modal-legal">
     <h2>AVISO LEGAL Y DE TRANSPARENCIA</h2>
     <p>
-      <strong>Papu T:v</strong> es una página web totalmente libre de piratería y de carácter strictly colaborativo. Esta plataforma no almacena, aloja ni distribuye ningún tipo de archivo audiovisual o película en sus servidores. Todos los enlaces son aportados por la comunidad de usuarios.
+      <strong>Papu T:v</strong> es una página web totalmente libre de piratería y de carácter estrictamente colaborativo. Esta plataforma no almacena, aloja ni distribuye ningún tipo de archivo audiovisual o película en sus servidores. Todos los enlaces son aportados por la comunidad de usuarios.
     </p>
     <div class="legal-box">
       <strong>Sustento Legal (Constitución de la República Bolivariana de Venezuela):</strong><br>
@@ -574,10 +582,13 @@
 <!-- Modal Tutorial Cursor -->
 <div class="modal-bg" id="modalTutorial">
   <div class="modal modal-legal" style="max-width: 480px;">
-    <h2>🎮 ACTIVAR MODO CURSOR</h2>
+    <h2>
+      <img src="https://valrobcell.com/wp-content/uploads/2023/06/amazon-fire-tv-stick-3rd-gen-with-alexa-voice-remote-b08c1w5n87-iset.png" alt="Control TV" class="control-icon">
+      ACTIVAR MODO CURSOR
+    </h2>
     <div class="legal-box" style="text-align: left;">
-      <strong>Paso 1:</strong> Deja presionado el botón <strong>OK</strong> (Seleccionar) en tu mando.<br><br>
-      <strong>Paso 2:</strong> Mueve el mando como si fuera un cursor de computadora para presionar Play en cualquier reproductor.
+      <strong>Paso 1:</strong> Deja presionado el <strong>botón central (OK)</strong> de tu control de TV.<br><br>
+      <strong>Paso 2:</strong> Mueve el control de TV para apuntar como cursor en la pantalla y presionar Play en cualquier reproductor.
     </div>
     <button class="btn-legal" id="btnTutorialOk" tabindex="0" onclick="cerrarTutorial()">OK (10s)</button>
   </div>
