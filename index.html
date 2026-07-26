@@ -8,12 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="icon.png">
 
-<!-- Anti-redirección y anti-popups global a nivel de ventana -->
+<!-- Anti-redirección global -->
 <script>
-  // Anular la apertura de ventanas emergentes/publicidad
   window.open = function() { return null; };
-
-  // Evitar que reproductores externos redirijan la página principal
   let paginaOriginal = window.location.href;
   window.addEventListener('beforeunload', function (e) {
     if (window.location.href !== paginaOriginal) {
@@ -22,7 +19,7 @@
   });
 </script>
 
-<!-- Scripts de Firebase CDN -->
+<!-- Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
@@ -60,8 +57,7 @@
   *{ box-sizing: border-box; margin:0; padding:0; }
 
   html, body{
-    background: var(--bg);
-    background-image: radial-gradient(circle at 50% 0%, #1c1333 0%, #09070f 70%);
+    background: #09070f;
     color: var(--text);
     font-family: 'Work Sans', sans-serif;
     min-height: 100vh;
@@ -73,7 +69,7 @@
   }
 
   aside{
-    background: linear-gradient(180deg, var(--panel) 0%, #0c0914 100%);
+    background: #0c0914;
     border-right: 1px solid var(--line);
     padding: 24px 0;
     display: flex;
@@ -120,14 +116,13 @@
     font-weight: 500;
     letter-spacing: .3px;
     border-left: 3px solid transparent;
-    transition: background .2s ease, color .2s ease, border-color .2s ease;
+    transition: background .15s linear, color .15s linear;
   }
 
   .cat-btn .dot{
     width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--line);
-    transition: background .2s ease;
     flex-shrink: 0;
   }
 
@@ -135,10 +130,10 @@
 
   .cat-btn.active{
     color: var(--text);
-    background: linear-gradient(90deg, var(--panel-2) 0%, transparent 100%);
+    background: var(--panel-2);
     border-left-color: var(--purple-light);
   }
-  .cat-btn.active .dot{ background: var(--purple-light); box-shadow: 0 0 8px var(--purple-light); }
+  .cat-btn.active .dot{ background: var(--purple-light); }
 
   .cat-btn.nsfw-btn{ color: var(--danger); }
   .cat-btn.nsfw-btn.active{ border-left-color: var(--danger); }
@@ -149,13 +144,11 @@
   .close-btn:focus,
   .btn-flotante-papu:focus,
   .btn-flotante-sugerencias:focus,
-  .btn-install:focus,
   .search-box:focus,
   .btn-legal:focus {
     outline: 3px solid var(--purple-light) !important;
     outline-offset: -2px;
     background: var(--panel-2);
-    box-shadow: 0 0 15px var(--purple-glow);
   }
 
   main{ padding: 40px 48px 80px; }
@@ -173,9 +166,7 @@
     font-family: 'Bebas Neue', sans-serif;
     font-size: 32px;
     letter-spacing: 1px;
-    background: linear-gradient(90deg, #ffffff, var(--purple-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--purple-light);
   }
 
   header.top .count{
@@ -189,27 +180,6 @@
     gap: 12px;
   }
 
-  .btn-install {
-    all: unset;
-    cursor: pointer;
-    background: linear-gradient(135deg, var(--purple) 0%, #6b21a8 100%);
-    color: #fff;
-    font-weight: 600;
-    font-size: 13px;
-    padding: 10px 18px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 0 12px var(--purple-glow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .btn-install:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 20px var(--purple-light);
-  }
-
   .search-box {
     background: var(--panel-2);
     border: 1px solid var(--line);
@@ -220,7 +190,6 @@
     font-family: inherit;
     font-size: 13px;
     width: 250px;
-    transition: border-color .2s ease, box-shadow .2s ease;
   }
 
   section.row{ margin-bottom: 48px; }
@@ -239,7 +208,7 @@
     content:'';
     flex:1;
     height:1px;
-    background: linear-gradient(90deg, var(--line), transparent);
+    background: var(--line);
   }
 
   .grid{
@@ -251,23 +220,25 @@
   .card{
     all: unset;
     cursor: pointer;
-    background: linear-gradient(145deg, var(--panel-2) 0%, var(--panel) 100%);
+    background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 8px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    contain: content;
+    will-change: transform;
+    transform: translateZ(0);
   }
 
   .card:hover, .card:focus{
-    transform: translateY(-4px);
+    transform: scale(1.02);
     border-color: var(--purple);
   }
 
   .thumb{
     aspect-ratio: 2/3;
-    background: linear-gradient(160deg, #261b3d, #110c1c);
+    background: #110c1c;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -285,17 +256,16 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: filter .3s ease, transform .3s ease;
   }
 
   .thumb.censored img.cover-img{
-    filter: blur(25px) brightness(0.4);
-    transform: scale(1.2);
+    filter: blur(20px);
+    transform: scale(1.1);
   }
 
   .card:hover .thumb.censored img.cover-img,
   .card:focus .thumb.censored img.cover-img{
-    filter: blur(0px) brightness(1);
+    filter: blur(0px);
     transform: scale(1);
   }
 
@@ -303,12 +273,10 @@
     position: absolute;
     width: 40px; height: 40px;
     border-radius: 50%;
-    background: rgba(15, 10, 25, 0.7);
+    background: rgba(15, 10, 25, 0.8);
     border: 1px solid var(--purple-light);
     display: flex; align-items: center; justify-content: center;
     opacity: 0;
-    transition: opacity .2s ease;
-    box-shadow: 0 0 10px var(--purple-glow);
     z-index: 2;
   }
   .card:hover .play, .card:focus .play{ opacity: 1; }
@@ -333,12 +301,10 @@
     background: #000;
     border: 2px solid #ff0000;
     border-radius: 50%;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.7), inset 0 0 10px rgba(255, 0, 0, 0.4);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
   }
 
@@ -350,12 +316,6 @@
     pointer-events: none;
   }
 
-  .btn-flotante-papu:hover, .btn-flotante-papu:focus {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px #ff0000, inset 0 0 15px #ff0000;
-    outline: none;
-  }
-
   .btn-flotante-sugerencias {
     position: fixed;
     bottom: 95px;
@@ -365,12 +325,10 @@
     background: #000;
     border: 2px solid var(--purple-light);
     border-radius: 50%;
-    box-shadow: 0 0 20px var(--purple-glow), inset 0 0 10px var(--purple-glow);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
   }
 
@@ -382,25 +340,15 @@
     pointer-events: none;
   }
 
-  .btn-flotante-sugerencias:hover, .btn-flotante-sugerencias:focus {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px var(--purple-light), inset 0 0 15px var(--purple-light);
-    outline: none;
-  }
-
-  /* Ocultar botones flotantes si hay alguna ventana o reproductor abierto */
   body:has(.modal-bg.open) .btn-flotante-papu,
   body:has(.modal-bg.open) .btn-flotante-sugerencias {
     display: none !important;
   }
 
-  /* Modal con difuminado */
   .modal-bg{
     display: none;
     position: fixed; inset: 0;
-    background: rgba(5, 3, 9, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(5, 3, 9, 0.92);
     z-index: 100;
     align-items: center;
     justify-content: center;
@@ -409,18 +357,17 @@
   .modal-bg.open{ display: flex; }
 
   .modal{
-    background: linear-gradient(180deg, var(--panel) 0%, #0a0712 100%);
+    background: var(--panel);
     border: 1px solid var(--purple);
     border-radius: 12px;
     width: min(900px, 100%);
     overflow: hidden;
-    box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
   }
 
   .player-wrapper {
     width: 100%;
     aspect-ratio: 16 / 9;
-    background: #000;
+    background: transparent !important;
     position: relative;
   }
 
@@ -430,10 +377,10 @@
     height: 100%;
     border: none;
     display: block;
-    background: #000;
+    background: transparent !important;
+    object-fit: contain;
   }
 
-  /* Superposición GIF de Carga */
   .player-loader {
     position: absolute;
     inset: 0;
@@ -467,11 +414,8 @@
     padding: 6px 12px;
     border: 1px solid var(--line);
     border-radius: 6px;
-    transition: border-color .2s ease, color .2s ease;
   }
-  .close-btn:hover, .close-btn:focus{ color: var(--text); border-color: var(--purple-light); outline: none; }
 
-  /* Lista de temporadas y episodios */
   .season-header {
     background: var(--panel-2);
     color: var(--purple-light);
@@ -498,7 +442,6 @@
     padding: 14px 20px;
     border-bottom: 1px solid var(--line);
     color: var(--text);
-    transition: background .15s ease;
   }
   .episode-pick:hover, .episode-pick:focus-visible{
     background: var(--panel-2);
@@ -520,14 +463,8 @@
     margin-right: 12px;
     padding: 4px 8px;
     border-radius: 4px;
-    transition: background .15s ease;
-  }
-  .back-to-episodes:hover, .back-to-episodes:focus-visible{
-    background: var(--panel-2);
-    outline: none;
   }
 
-  /* Modal Legal e Instalación Corregido */
   .modal-legal {
     max-width: 550px;
     max-height: 85vh;
@@ -570,11 +507,6 @@
     font-size: 15px;
     padding: 12px 36px;
     border-radius: 25px;
-    box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
-    transition: transform 0.15s ease;
-  }
-  .btn-legal:hover, .btn-legal:focus {
-    transform: scale(1.05);
   }
 
   @media (max-width: 720px){
@@ -583,13 +515,12 @@
     .brand{ display: none; }
     nav{ flex-direction: row; gap: 8px; padding: 0 16px; }
     .cat-btn{ padding: 10px 16px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-    .cat-btn.active{ border-left-color: transparent; border-bottom-color: var(--purple-light); background: linear-gradient(0deg, var(--panel-2) 0%, transparent 100%); }
+    .cat-btn.active{ border-left-color: transparent; border-bottom-color: var(--purple-light); }
     .cat-btn.nsfw-btn.active{ border-bottom-color: var(--danger); }
     main{ padding: 24px 16px 100px; }
     .grid{ grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
     .header-actions { width: 100%; flex-direction: column; align-items: stretch; }
     .search-box { width: 100%; }
-    .btn-install { justify-content: center; }
   }
 </style>
 </head>
@@ -610,9 +541,6 @@
       <span class="count" id="pageCount"></span>
     </div>
     <div class="header-actions">
-      <button class="btn-install" tabindex="0" onclick="playClickSound(); document.getElementById('modalInstallApp').classList.add('open');">
-        📲 Instalar App
-      </button>
       <input type="text" id="searchInput" class="search-box" placeholder="🔍 Buscar por nombre..." oninput="filtrarBusqueda()" tabindex="0">
     </div>
   </header>
@@ -643,17 +571,15 @@
   </div>
 </div>
 
-<!-- Modal Instrucciones de Instalación App -->
-<div class="modal-bg" id="modalInstallApp">
+<!-- Modal Tutorial Cursor -->
+<div class="modal-bg" id="modalTutorial">
   <div class="modal modal-legal" style="max-width: 480px;">
-    <h2>📲 INSTALAR EN EL TELÉFONO</h2>
-    <div class="legal-box" style="text-align: center;">
-      Para crear un acceso directo y usar la aplicación en tu pantalla de inicio:<br><br>
-      1. Toca el botón de los <strong>3 puntos (⋮)</strong> en la esquina superior derecha del navegador.<br>
-      2. Busca y selecciona la opción <strong>"Agregar a la pantalla de inicio"</strong> o <strong>"Instalar aplicación"</strong>.<br><br>
-      <em>¡Y listo! Ya la tendrás disponible como una App en tu teléfono.</em>
+    <h2>🎮 ACTIVAR MODO CURSOR</h2>
+    <div class="legal-box" style="text-align: left;">
+      <strong>Paso 1:</strong> Deja presionado el botón <strong>OK</strong> (Seleccionar) en tu mando.<br><br>
+      <strong>Paso 2:</strong> Mueve el mando como si fuera un cursor de computadora para presionar Play en cualquier reproductor.
     </div>
-    <button class="btn-legal" style="background: var(--purple-light); color: #000;" tabindex="0" onclick="playClickSound(); document.getElementById('modalInstallApp').classList.remove('open');">Entendido</button>
+    <button class="btn-legal" id="btnTutorialOk" tabindex="0" onclick="cerrarTutorial()">OK (10s)</button>
   </div>
 </div>
 
@@ -667,14 +593,14 @@
   </div>
 </div>
 
-<!-- Modal Sugerencias Corregido -->
+<!-- Modal Sugerencias -->
 <div class="modal-bg" id="modalSugerencias">
   <div class="modal modal-sugerencias">
     <div class="sugerencias-body" style="padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;">
       <img class="sugerencias-icono" src="https://i.pinimg.com/originals/4d/69/ac/4d69acc3793c1fd49b1cec20eddd9408.gif" alt="Sugerencias" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; pointer-events: none;">
       <h3 style="color: var(--purple-light); font-size: 20px;">¿Falta algo en Papu T:v?</h3>
       <p style="color: var(--muted); font-size: 13px;">Escribinos qué película, serie o idea te gustaría ver acá.</p>
-      <a href="mailto:Richard27colina@gmail.com?subject=Sugerencia%20Papu%20T%3Av" class="btn-enviar-sugerencia" target="_blank" style="display: inline-block; margin-top: 10px; padding: 10px 24px; background: var(--purple-light); color: #000; font-weight: 600; text-decoration: none; border-radius: 20px; transition: transform 0.2s ease;">Enviar por correo</a>
+      <a href="mailto:Richard27colina@gmail.com?subject=Sugerencia%20Papu%20T%3Av" class="btn-enviar-sugerencia" target="_blank" style="display: inline-block; margin-top: 10px; padding: 10px 24px; background: var(--purple-light); color: #000; font-weight: 600; text-decoration: none; border-radius: 20px;">Enviar por correo</a>
     </div>
     <div class="modal-head">
       <span></span>
@@ -685,6 +611,7 @@
 
 <script>
   let audioCtx = null;
+  let timerInterval = null;
 
   function playClickSound() {
     try {
@@ -707,6 +634,37 @@
   function aceptarLegal() {
     playClickSound();
     document.getElementById('modalLegal').classList.remove('open');
+    abrirTutorial();
+  }
+
+  function abrirTutorial() {
+    const modalTut = document.getElementById('modalTutorial');
+    const btnOk = document.getElementById('btnTutorialOk');
+    modalTut.classList.add('open');
+    if (btnOk) btnOk.focus();
+
+    let segundos = 10;
+    btnOk.textContent = `OK (${segundos}s)`;
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      segundos--;
+      if (segundos > 0) {
+        btnOk.textContent = `OK (${segundos}s)`;
+      } else {
+        cerrarTutorial();
+      }
+    }, 1000);
+  }
+
+  function cerrarTutorial() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    playClickSound();
+    const modalTut = document.getElementById('modalTutorial');
+    if (modalTut) modalTut.classList.remove('open');
   }
 
   const CATEGORIAS_BASE = {
@@ -724,7 +682,6 @@
   const pageTitle = document.getElementById('pageTitle');
   const pageCount = document.getElementById('pageCount');
 
-  // Lectura desde Firebase DB
   db.ref('catalogo').on('value', (snapshot) => {
     const rawData = snapshot.val() || {};
     const guardados = Object.values(rawData);
@@ -742,7 +699,6 @@
       });
     });
 
-    // Agrupación optimizada de Series por Temporadas
     const grupos = {};
     guardados.forEach(it => {
       if (!it || it.categoria !== 'series') return;
@@ -781,7 +737,6 @@
     DATA = dataFinal;
     render();
     
-    // Autofoco en botón legal si está abierto al cargar
     if (document.getElementById('modalLegal').classList.contains('open')) {
       setTimeout(() => document.getElementById('btnAceptarLegal').focus(), 100);
     }
@@ -952,20 +907,17 @@
     modalTitle.appendChild(span);
 
     const url = item.src || '';
-
-    // HTML del loader GIF sobrepuesto
     const loaderHtml = `<div class="player-loader" id="playerLoader"><img src="https://i.pinimg.com/originals/45/0c/24/450c24a5e30fc6b31c0919c5a8fcde56.gif" alt="Cargando..."></div>`;
 
     if (isEmbedUrl(url)) {
       playerContainer.innerHTML = loaderHtml + `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
     } else {
-      playerContainer.innerHTML = loaderHtml + `<video id="player" src="${url}" controls tabindex="0" autoplay></video>`;
+      playerContainer.innerHTML = loaderHtml + `<video id="player" src="${url}" controls tabindex="0" autoplay style="background:transparent !important;"></video>`;
     }
 
     modalBg.classList.add('open');
     closeBtn.focus();
 
-    // Temporizador de 2.5 segundos para ocultar el GIF animado
     setTimeout(() => {
       const loader = document.getElementById('playerLoader');
       if (loader) loader.remove();
@@ -979,7 +931,6 @@
   }
 
   const modalSugerencias = document.getElementById('modalSugerencias');
-  const modalInstallApp = document.getElementById('modalInstallApp');
 
   closeBtn.addEventListener('click', closePlayer);
   modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closePlayer(); });
@@ -989,24 +940,14 @@
       modalSugerencias.classList.remove('open');
     }
   });
-  modalInstallApp.addEventListener('click', (e) => {
-    if (e.target === modalInstallApp) {
-      playClickSound();
-      modalInstallApp.classList.remove('open');
-    }
-  });
 
-  // Navegación con mando / teclado
+  // Navegación optimizada D-Pad
   document.addEventListener('keydown', (e) => {
     const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
     if (e.key === 'Escape') {
       if (document.getElementById('modalLegal').classList.contains('open')) return;
-      if (modalInstallApp.classList.contains('open')) {
-        playClickSound();
-        modalInstallApp.classList.remove('open');
-        return;
-      }
+      if (document.getElementById('modalTutorial').classList.contains('open')) { cerrarTutorial(); return; }
       if (modalBg.classList.contains('open')) { closePlayer(); return; }
       if (modalSugerencias.classList.contains('open')) {
         playClickSound();
@@ -1016,24 +957,21 @@
     }
 
     if (!arrowKeys.includes(e.key)) return;
-
-    if (document.activeElement === document.getElementById('searchInput') && e.key !== 'ArrowDown') {
-      return;
-    }
+    if (document.activeElement === document.getElementById('searchInput') && e.key !== 'ArrowDown') return;
 
     e.preventDefault();
 
     const isLegalOpen = document.getElementById('modalLegal').classList.contains('open');
-    const isInstallOpen = modalInstallApp.classList.contains('open');
+    const isTutorialOpen = document.getElementById('modalTutorial').classList.contains('open');
     
     let container = document;
     if (isLegalOpen) container = document.getElementById('modalLegal');
-    else if (isInstallOpen) container = modalInstallApp;
+    else if (isTutorialOpen) container = document.getElementById('modalTutorial');
     else if (modalBg.classList.contains('open')) container = modalBg;
     else if (modalSugerencias.classList.contains('open')) container = modalSugerencias;
 
     const focusables = Array.from(container.querySelectorAll('button:not([disabled]), input, a[href], video, iframe, [tabindex="0"]'))
-      .filter(el => el.offsetParent !== null && window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).visibility !== 'hidden');
+      .filter(el => el.offsetParent !== null && window.getComputedStyle(el).display !== 'none');
 
     if (!focusables.length) return;
 
@@ -1060,7 +998,7 @@
 
       if (isCandidate) {
         const dx = (r.left + r.width / 2) - (cRect.left + cRect.width / 2);
-        const dy = (r.top + r.height / 2) - (cRect.top + cRect.width / 2);
+        const dy = (r.top + r.height / 2) - (cRect.top + cRect.height / 2);
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < minDist) {
           minDist = dist;
