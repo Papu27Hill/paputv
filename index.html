@@ -388,6 +388,12 @@
     outline: none;
   }
 
+  /* Ocultar botones flotantes si hay alguna ventana o reproductor abierto */
+  body:has(.modal-bg.open) .btn-flotante-papu,
+  body:has(.modal-bg.open) .btn-flotante-sugerencias {
+    display: none !important;
+  }
+
   /* Modal con difuminado */
   .modal-bg{
     display: none;
@@ -1054,7 +1060,7 @@
 
       if (isCandidate) {
         const dx = (r.left + r.width / 2) - (cRect.left + cRect.width / 2);
-        const dy = (r.top + r.height / 2) - (cRect.top + cRect.height / 2);
+        const dy = (r.top + r.height / 2) - (cRect.top + cRect.width / 2);
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < minDist) {
           minDist = dist;
