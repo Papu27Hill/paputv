@@ -8,6 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="icon.png">
 
+<!-- Librería HLS.js para reproducir transmisiones .m3u8 de forma nativa -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
 <!-- Anti-redirección global -->
 <script>
   window.open = function() { return null; };
@@ -367,18 +370,161 @@
   .player-wrapper {
     width: 100%;
     aspect-ratio: 16 / 9;
-    background: transparent !important;
+    background: #000 !important;
     position: relative;
+    overflow: hidden;
   }
 
-  .player-wrapper video,
   .player-wrapper iframe {
     width: 100%;
     height: 100%;
     border: none;
     display: block;
-    background: transparent !important;
+  }
+
+  /* ESTILOS DEL REPRODUCTOR MINIMALISTA MORADO PAPU */
+  .custom-player-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .custom-player-container video {
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+  }
+
+  .papu-watermark {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--purple-light);
+    box-shadow: 0 0 10px var(--purple-glow);
+    object-fit: cover;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0.85;
+    transition: opacity 0.4s ease;
+  }
+
+  .custom-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(9, 7, 15, 0.95), rgba(9, 7, 15, 0.1));
+    padding: 20px 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .custom-controls.hidden, .papu-watermark.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .progress-bar-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 5px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+    transition: height 0.15s ease;
+  }
+
+  .progress-bar:hover {
+    height: 7px;
+  }
+
+  .progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--purple-light);
+    box-shadow: 0 0 8px var(--purple-light);
+    cursor: pointer;
+  }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .controls-left, .controls-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ctrl-btn {
+    all: unset;
+    cursor: pointer;
+    background: rgba(25, 19, 40, 0.85);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+  }
+
+  .ctrl-btn:hover, .ctrl-btn:focus-visible {
+    background: var(--purple-light);
+    color: #000;
+    border-color: var(--purple-light);
+    box-shadow: 0 0 10px var(--purple-glow);
+  }
+
+  .ctrl-btn.play-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    padding: 0;
+    justify-content: center;
+    font-size: 14px;
+    background: var(--purple);
+    color: #fff;
+    border: none;
+  }
+
+  .ctrl-btn.play-btn:hover {
+    background: var(--purple-light);
+    color: #000;
+  }
+
+  .time-display {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: monospace;
+    margin-left: 8px;
   }
 
   .player-loader {
@@ -862,11 +1008,12 @@
   const modalTitle = document.getElementById('modalTitle');
   const closeBtn = document.getElementById('closeBtn');
 
-  function isEmbedUrl(url) {
+  // Detecta si es un enlace ejecutable directo de video (mp4, m3u8, webm, etc.)
+  function isDirectVideoUrl(url) {
     if (!url) return false;
-    const urlLower = url.toLowerCase();
-    const directExtensions = ['.mp4', '.m3u8', '.mp3', '.webm', '.ogg', '.wav'];
-    return urlLower.includes('/embed/') || urlLower.includes('iframe') || !directExtensions.some(ext => urlLower.includes(ext));
+    const cleanUrl = url.toLowerCase().split('?')[0];
+    const exts = ['.mp4', '.m3u8', '.webm', '.mkv', '.mov', '.ogg'];
+    return exts.some(ext => cleanUrl.endsWith(ext) || cleanUrl.includes(ext));
   }
 
   function openEpisodePicker(item){
@@ -920,10 +1067,147 @@
     const url = item.src || '';
     const loaderHtml = `<div class="player-loader" id="playerLoader"><img src="https://i.pinimg.com/originals/45/0c/24/450c24a5e30fc6b31c0919c5a8fcde56.gif" alt="Cargando..."></div>`;
 
-    if (isEmbedUrl(url)) {
-      playerContainer.innerHTML = loaderHtml + `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+    if (isDirectVideoUrl(url)) {
+      // REPRODUCTOR MINIMALISTA MORADO PAPU
+      playerContainer.innerHTML = loaderHtml + `
+        <div class="custom-player-container" id="customPlayerWrapper">
+          <img src="icon.png" class="papu-watermark" id="papuWatermark" alt="Papu TV">
+          <video id="customVideo" autoplay tabindex="0"></video>
+          <div class="custom-controls" id="customControls">
+            <div class="progress-bar-container">
+              <input type="range" id="seekBar" class="progress-bar" value="0" min="0" max="100" step="0.1" tabindex="0">
+            </div>
+            <div class="controls-row">
+              <div class="controls-left">
+                <button class="ctrl-btn play-btn" id="btnPlayPause" title="Play/Pausa" tabindex="0">⏸</button>
+                <button class="ctrl-btn" id="btnRewind" title="Atrasar 10s" tabindex="0">⏮ 10s</button>
+                <button class="ctrl-btn" id="btnForward" title="Adelantar 10s" tabindex="0">10s ⏭</button>
+                <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
+              </div>
+              <div class="controls-right">
+                <button class="ctrl-btn" id="btnFullscreen" title="Pantalla Completa" tabindex="0">⛶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const video = document.getElementById('customVideo');
+      const wrapper = document.getElementById('customPlayerWrapper');
+      const controls = document.getElementById('customControls');
+      const watermark = document.getElementById('papuWatermark');
+      const btnPlay = document.getElementById('btnPlayPause');
+      const btnRewind = document.getElementById('btnRewind');
+      const btnForward = document.getElementById('btnForward');
+      const btnFS = document.getElementById('btnFullscreen');
+      const seekBar = document.getElementById('seekBar');
+      const timeDisplay = document.getElementById('timeDisplay');
+
+      // Ocultar controles automáticamente tras 3 segundos
+      let hideTimer = null;
+      function resetHideTimer() {
+        controls.classList.remove('hidden');
+        watermark.classList.remove('hidden');
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          if (!video.paused) {
+            controls.classList.add('hidden');
+            watermark.classList.add('hidden');
+          }
+        }, 3000);
+      }
+
+      wrapper.addEventListener('mousemove', resetHideTimer);
+      wrapper.addEventListener('click', resetHideTimer);
+      wrapper.addEventListener('keydown', resetHideTimer);
+      resetHideTimer();
+
+      // Cargar reproductor .m3u8 o .mp4
+      const lowerUrl = url.toLowerCase();
+      if (lowerUrl.includes('.m3u8')) {
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(url);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {});
+            btnPlay.textContent = '⏸';
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = url;
+          video.play().catch(() => {});
+          btnPlay.textContent = '⏸';
+        }
+      } else {
+        video.src = url;
+        video.play().catch(() => {});
+        btnPlay.textContent = '⏸';
+      }
+
+      // Funciones Play / Pausa
+      function togglePlay() {
+        if (video.paused) {
+          video.play();
+          btnPlay.textContent = '⏸';
+        } else {
+          video.pause();
+          btnPlay.textContent = '▶';
+          controls.classList.remove('hidden');
+          watermark.classList.remove('hidden');
+        }
+      }
+
+      btnPlay.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+      video.addEventListener('click', togglePlay);
+
+      // Botones Adelantar / Atrasar 10s
+      btnRewind.addEventListener('click', (e) => {
+        e.stopPropagation();
+        video.currentTime = Math.max(0, video.currentTime - 10);
+      });
+
+      btnForward.addEventListener('click', (e) => {
+        e.stopPropagation();
+        video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
+      });
+
+      // Formatear Tiempo (00:00)
+      function formatTime(sec) {
+        if (isNaN(sec) || !isFinite(sec)) return '00:00';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+      }
+
+      // Actualizar barra de progreso y tiempo
+      video.addEventListener('timeupdate', () => {
+        if (video.duration) {
+          seekBar.value = (video.currentTime / video.duration) * 100;
+          timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+        }
+      });
+
+      // Adelantar / Atrasar desde la barra de rango
+      seekBar.addEventListener('input', (e) => {
+        e.stopPropagation();
+        if (video.duration) {
+          video.currentTime = (seekBar.value / 100) * video.duration;
+        }
+      });
+
+      // Pantalla Completa
+      btnFS.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!document.fullscreenElement) {
+          wrapper.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+
     } else {
-      playerContainer.innerHTML = loaderHtml + `<video id="player" src="${url}" controls tabindex="0" autoplay style="background:transparent !important;"></video>`;
+      // Embed / Iframe externo
+      playerContainer.innerHTML = loaderHtml + `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
     }
 
     modalBg.classList.add('open');
@@ -952,7 +1236,7 @@
     }
   });
 
-  // Navegación optimizada D-Pad
+  // Navegación optimizada D-Pad / Teclado
   document.addEventListener('keydown', (e) => {
     const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 
